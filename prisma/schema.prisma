@@ -18,18 +18,171 @@ enum Role {
   ADMIN
 }
 
+enum ImageType {
+  PRODUCT
+  MARKET
+  REVIEW
+}
+
 model User {
-  id          Int       @id @default(autoincrement())
-  fullname    String
-  username    String    @unique
-  email       String    @unique
-  password    String
-  phone       String    @unique
-  role        Role      @default(USER)
+  id                String   @id
+  full_name         String
+  username          String   @unique
+  email             String   @unique
+  password          String?
+  phone             String?  @unique
+  role              Role     @default(USER)
+  longitude         String?
+  latitude          String?
+  address           String?
+  profile_image_url String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  merchant  Merchant?
+  reviews   Review[]
+  carts     Cart[]
+  checkouts Checkout[]
+
+  @@map("users")
+}
+
+model Market {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
   longitude   String?
   latitude    String?
-  address     String?
-  profile_image String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  merchants Merchant[]
+
+  @@map("markets")
+}
+
+model Merchant {
+  id                Int      @id @default(autoincrement())
+  name              String
+  profile_image_url String?
+  description       String?
+  longitude         String?
+  latitude          String?
+  user_id           String   @unique
+  market_id         Int
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  user     User      @relation(fields: [user_id], references: [id])
+  market   Market    @relation(fields: [market_id], references: [id])
+  products Product[]
+
+  @@map("merchants")
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  product_categories ProductCategory[]
+
+  @@map("categories")
+}
+
+model ProductCategory {
+  id          Int @id @default(autoincrement())
+  product_id  Int
+  category_id Int
+
+  product  Product  @relation(fields: [product_id], references: [id])
+  category Category @relation(fields: [category_id], references: [id])
+
+  @@map("product_categories")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  merchant_id Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  merchant           Merchant          @relation(fields: [merchant_id], references: [id])
+  reviews            Review[]
+  carts              Cart[]
+  product_categories ProductCategory[]
+
+  @@map("products")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  rating     Int
+  comment    String?
+  user_id    String
+  product_id Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+
+  user    User    @relation(fields: [user_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@map("reviews")
+}
+
+model Cart {
+  id          Int      @id @default(autoincrement())
+  user_id     String
+  product_id  Int
+  quantity    Int
+  total_price Float
+  is_checkout Boolean  @default(false)
+  checkout_id String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  user     User      @relation(fields: [user_id], references: [id])
+  product  Product   @relation(fields: [product_id], references: [id])
+  checkout Checkout? @relation(fields: [checkout_id], references: [id])
+
+  @@map("carts")
+}
+
+model Checkout {
+  id          String   @id @default(uuid())
+  user_id     String
+  total_price Float
+  merchant_id Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  user  User   @relation(fields: [user_id], references: [id])
+  carts Cart[]
+
+  @@map("checkouts")
+}
+
+model Images {
+  id        Int       @id @default(autoincrement())
+  item_id   Int
+  url       String
+  type      ImageType
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+
+  @@map("images")
+}
+
+model History {
+  id        Int      @id @default(autoincrement())
+  predict   String
+  image_url String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  @@map("histories")
 }
