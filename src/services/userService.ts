@@ -1,19 +1,11 @@
 import prisma from "../config/database";
-import { UserType } from "../interfaces/UserType";
+import ResponseError from "../utils/responseError";
+import { User } from "@prisma/client";
 
-export async function createUser(user: UserType) {
+export async function createUser(user: User) {
   return prisma.user.create({
     data: {
-      fullname: user.fullname,
-      username: user.username,
-      email: user.email,
-      password: user.password,
-      phone: user.phone,
-      role: user.role,
-      longitude: user.longitude,
-      latitude: user.latitude,
-      address: user.address,
-      profile_image: user.profile_image,
+      ...user,
     },
   });
 }
@@ -36,4 +28,18 @@ export async function getUsersAdmin() {
       role: "ADMIN",
     },
   });
+}
+
+export async function getUserById(id: string) {
+  const user = prisma.user.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  if (!user) {
+    throw new ResponseError(404, "User not found");
+  }
+
+  return user;
 }
