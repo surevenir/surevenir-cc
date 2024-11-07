@@ -10,7 +10,9 @@ export async function createUser(
   next: NextFunction
 ) {
   const { data } = req.body;
-  CreateUserRequest.parse(data);
+  console.log(data);
+
+  CreateUserRequest.parse({ data });
 
   try {
     const user = await userService.createUser(data);

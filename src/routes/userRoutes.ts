@@ -5,7 +5,7 @@ import {
   getUserAdmin,
 } from "../controllers/userController";
 import authorizeAdmin from "../middlewares/authorizeAdmin";
-import authenticate from "../middlewares/authorizeAdmin";
+import authenticate from "../middlewares/authenticate";
 
 const router = express.Router();
 
