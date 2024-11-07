@@ -1,5 +1,6 @@
 import ResponseError from "../util/response-error.js";
 import { Prisma } from "@prisma/client";
+import * as z from "zod";
 
 export default (err, req, res, next) => {
   console.error(err);
@@ -7,6 +8,12 @@ export default (err, req, res, next) => {
   let error = "Internal Server Error";
   let status = 500;
   let message = "Something went wrong";
+
+  if (err instanceof z.ZodError) {
+    error = "Client Error";
+    status = 400;
+    message = err.errors;
+  }
 
   if (err instanceof ResponseError) {
     error = "Client Error";

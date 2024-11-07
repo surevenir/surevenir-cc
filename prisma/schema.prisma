@@ -13,17 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  USER
-  ADMIN
-}
-
-enum ImageType {
-  PRODUCT
-  MARKET
-  REVIEW
-}
-
 model User {
   id                String   @id
   full_name         String
@@ -31,7 +20,8 @@ model User {
   email             String   @unique
   password          String?
   phone             String?  @unique
-  role              Role     @default(USER)
+  role              String   @default("USER")
+  provider          String   @default("EMAIL")
   longitude         String?
   latitude          String?
   address           String?
@@ -167,12 +157,12 @@ model Checkout {
 }
 
 model Images {
-  id        Int       @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   item_id   Int
   url       String
-  type      ImageType
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now())
+  type      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 
   @@map("images")
 }
