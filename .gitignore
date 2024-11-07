@@ -1,0 +1,46 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build output
+dist/
+build/
+
+# TypeScript cache and output files
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE/editor config
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Optional npm cache directory
+.npm
+
+# Mac OS and Linux swap files
+*.swp
+*.swo
+
+# Testing output
+coverage/
+
+# Temporary files
+tmp/
+temp/
