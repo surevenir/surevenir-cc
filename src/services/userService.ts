@@ -10,6 +10,7 @@ export async function createUser(user: User) {
       OR: [{ id: user.id }, { username: user.username }, { email: user.email }],
     },
   });
+
   if (existingUser?.id === user.id)
     throw new ResponseError(409, "User already exists");
   if (existingUser?.username === user.username)
@@ -29,11 +30,17 @@ export async function getAllUsers() {
 }
 
 export async function getUserByEmail(email: string) {
-  return prisma.user.findUnique({
+  const user = prisma.user.findUnique({
     where: {
       email,
     },
   });
+
+  if (!user) {
+    throw new ResponseError(404, "User not found");
+  }
+
+  return user;
 }
 
 export async function getUsersAdmin() {
