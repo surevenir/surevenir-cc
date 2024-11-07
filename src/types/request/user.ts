@@ -4,8 +4,8 @@ const CreateUserRequest = z.object({
   full_name: z.string().min(3),
   username: z.string().min(3),
   email: z.string().email(),
-  provider: z.enum(["GOOGLE", "LOCAL"]),
-  password: z.string().optional(), 
+  provider: z.enum(["GOOGLE", "EMAIL"]),
+  password: z.string().optional(),
   role: z.enum(["USER", "ADMIN", "MERCHANT"]),
 });
 
