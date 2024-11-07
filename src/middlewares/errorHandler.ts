@@ -11,14 +11,14 @@ export default function errorHandler(
 ): Response | void {
   console.error(err);
 
-  let error = "Internal Server Error";
+  let error: any = "Internal Server Error";
   let status = 500;
   let message: string | z.ZodIssue[] = "Something went wrong";
 
   if (err instanceof z.ZodError) {
-    error = "Client Error";
+    error = err.errors;
     status = 400;
-    message = err.errors; // ZodError errors are detailed validation errors
+    message = "Invalid input data";
   }
 
   if (err instanceof ResponseError) {

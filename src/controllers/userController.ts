@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import * as userService from "../services/userService";
 import createResponse from "../utils/createResponse";
-import { z } from "zod";
 import { CreateUserRequest } from "../types/request/user";
 
 export async function createUser(
@@ -9,13 +8,12 @@ export async function createUser(
   res: Response,
   next: NextFunction
 ) {
-  const { data } = req.body;
-  CreateUserRequest.parse(data);
-
   try {
-    const user = await userService.createUser(data);
+    CreateUserRequest.parse(req.body);
+    const user = await userService.createUser(req.body);
     createResponse(res, 201, "User created successfully", user);
   } catch (error) {
+    console.log("error", error);
     next(error);
   }
 }
