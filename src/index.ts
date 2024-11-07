@@ -1,6 +1,15 @@
 import express, { Request, Response } from "express";
 import userRoutes from "./routes/userRoutes";
 import errorHandler from "./middlewares/errorHandler";
+import { User } from "@prisma/client";
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: User | null;
+    }
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;

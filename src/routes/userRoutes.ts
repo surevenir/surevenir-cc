@@ -4,11 +4,13 @@ import {
   getAllUsers,
   getUserAdmin,
 } from "../controllers/userController";
+import authorizeAdmin from "../middlewares/authorizeAdmin";
+import authenticate from "../middlewares/authorizeAdmin";
 
 const router = express.Router();
 
-router.get("/users/", getAllUsers);
-router.get("/users/admin", getUserAdmin);
+router.get("/users", authenticate, getAllUsers);
+router.get("/users/admin", authenticate, authorizeAdmin, getUserAdmin);
 
 router.post("/users", createUser);
 

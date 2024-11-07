@@ -1,6 +1,6 @@
-import { Response, Request } from "express";
+import { Response } from "express";
 
-const createResponse = (
+export default (
   res: Response,
   statucCode: number,
   message: string,
@@ -17,5 +17,3 @@ const createResponse = (
 
   return res.status(statucCode).json(body);
 };
-
-export default createResponse;
