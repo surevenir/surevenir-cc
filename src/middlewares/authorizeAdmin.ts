@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import ResponseError from "../utils/responseError.js";
-import { Role } from "@prisma/client";
+import { Role } from "../types/enum/dbEnum";
 
 export default async (req: Request, res: Response, next: NextFunction) => {
   try {
