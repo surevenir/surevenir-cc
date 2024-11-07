@@ -47,8 +47,8 @@ export default function errorHandler(
 
   return res.status(status).json({
     success: false,
-    error,
     status_code: status,
+    error,
     message,
     data: null,
   });
