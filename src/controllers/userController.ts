@@ -9,11 +9,10 @@ export async function createUser(
   next: NextFunction
 ) {
   try {
-    CreateUserRequest.parse(req.body);
-    const user = await userService.createUser(req.body);
+    const data: any = CreateUserRequest.parse(req.body);
+    const user = await userService.createUser(data);
     createResponse(res, 201, "User created successfully", user);
   } catch (error) {
-    console.log("error", error);
     next(error);
   }
 }

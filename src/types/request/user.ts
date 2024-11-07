@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const CreateUserRequest = z.object({
+  id: z.string(),
   full_name: z.string().min(3),
   username: z.string().min(3),
   email: z.string().email(),
