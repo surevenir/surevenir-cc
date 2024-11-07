@@ -30,7 +30,7 @@ export async function getUserByEmail(email: string) {
   });
 }
 
-export async function getUserAdmin() {
+export async function getUsersAdmin() {
   return prisma.user.findMany({
     where: {
       role: "ADMIN",

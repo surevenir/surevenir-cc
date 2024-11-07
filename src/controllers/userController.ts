@@ -1,76 +1,44 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import * as userService from "../services/userService";
-import createResponse from "../utils/utils";
+import createResponse from "../utils/createResponse";
 
-export async function createUser(req: Request, res: Response) {
+export async function createUser(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   const { data } = req.body;
 
   try {
     const user = await userService.createUser(data);
-    createResponse(res, {
-      status: "success",
-      message: "Created was successful",
-      data: user,
-      code: 201,
-    });
+    createResponse(res, 201, "User created successfully", user);
   } catch (error) {
-    createResponse(res, {
-      status: "error",
-      message: "Failed to create user" + error,
-      code: 500,
-    });
+    next(error);
   }
 }
 
-export async function getAllUsers(req: Request, res: Response) {
+export async function getAllUsers(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
-    const user = await userService.getAllUsers();
-    if (user) {
-      createResponse(res, {
-        status: "success",
-        message: "Request was successful",
-        data: user,
-        code: 200,
-      });
-    } else {
-      createResponse(res, {
-        status: "error",
-        message: "User not found",
-        code: 404,
-      });
-    }
+    const users = await userService.getAllUsers();
+    createResponse(res, 200, "Users retrieved successfully", users);
   } catch (error) {
-    createResponse(res, {
-      status: "error",
-      message: "Failed to retrieve user",
-      code: 500,
-    });
+    next(error);
   }
 }
 
-export async function getUserAdmin(req: Request, res: Response) {
+export async function getUserAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
-    const user = await userService.getUserAdmin();
-
-    if (user.length > 0) {
-      createResponse(res, {
-        status: "success",
-        message: "Request was successful",
-        data: user,
-        code: 200,
-      });
-    } else {
-      createResponse(res, {
-        status: "error",
-        message: "User not found",
-        code: 404,
-      });
-    }
+    const users = await userService.getUsersAdmin();
+    createResponse(res, 200, "Admin users retrieved successfully", users);
   } catch (error) {
-    createResponse(res, {
-      status: "error",
-      message: "Failed to retrieve user",
-      code: 500,
-    });
+    next(error);
   }
 }
