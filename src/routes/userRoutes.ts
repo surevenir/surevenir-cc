@@ -1,17 +1,13 @@
 import express from "express";
-import {
-  createUser,
-  getAllUsers,
-  getUserAdmin,
-} from "../controllers/userController";
+import UserController from "../controllers/userController";
 import authorizeAdmin from "../middlewares/authorizeAdmin";
 import authenticate from "../middlewares/authenticate";
 
 const router = express.Router();
 
-router.get("/users", authenticate, getAllUsers);
-router.get("/users/admin", authenticate, authorizeAdmin, getUserAdmin);
+router.get("/users", authenticate, UserController.getAllUsers);
+router.get("/users/admin", authenticate, authorizeAdmin, UserController.getUserAdmin);
 
-router.post("/users", createUser);
+router.post("/users", UserController.createUser);
 
 export default router;
