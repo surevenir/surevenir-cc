@@ -1,8 +1,22 @@
+import e from "express";
 import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
 import { User } from "@prisma/client";
 
 export async function createUser(user: User) {
+  // make sure id, username, email is unique
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      OR: [{ id: user.id }, { username: user.username }, { email: user.email }],
+    },
+  });
+  if (existingUser?.id === user.id)
+    throw new ResponseError(409, "User already exists");
+  if (existingUser?.username === user.username)
+    throw new ResponseError(409, "Username already used");
+  if (existingUser?.email === user.email)
+    throw new ResponseError(409, "Email already used");
+
   return prisma.user.create({
     data: {
       ...user,
