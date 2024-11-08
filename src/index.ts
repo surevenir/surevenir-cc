@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import userRoutes from "./routes/userRoutes";
 import marketRoutes from "./routes/marketRoutes";
+import categoryRoutes from "./routes/categoryRoutes";
 import errorHandler from "./middlewares/errorHandler";
 import { User } from "@prisma/client";
 
@@ -23,6 +24,7 @@ app.use(express.json());
 
 app.use("/api/users", userRoutes);
 app.use("/api/markets", marketRoutes);
+app.use("/api/categories", categoryRoutes);
 
 app.use(errorHandler as any);
 

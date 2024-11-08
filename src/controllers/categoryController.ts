@@ -22,7 +22,7 @@ class CategoryController {
     createResponse(res, 201, "Category created successfully", category);
   }
 
-  async getAllCategorys(req: Request, res: Response, next: NextFunction) {
+  async getAllCategories(req: Request, res: Response, next: NextFunction) {
     const categories = await this.categoryService.getAllCategories();
     createResponse(res, 200, "Categories retrieved successfully", categories);
   }
