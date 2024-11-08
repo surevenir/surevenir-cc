@@ -13,8 +13,6 @@ export async function createMarket(
   CreateUserRequest.parse(data);
 
   try {
-    const user = await userService.createUser(data);
-    createResponse(res, 201, "User created successfully", user);
   } catch (error) {
     next(error);
   }
