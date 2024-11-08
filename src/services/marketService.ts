@@ -29,48 +29,26 @@ class MarketService {
     return market;
   }
 
-  // async getUsersAdmin() {
-  //   return prisma.user.findMany({
-  //     where: {
-  //       role: "ADMIN",
-  //     },
-  //   });
-  // }
+  async updateMarket(market: Market) {
+    const existingMarket = await prisma.market.findFirst({
+      where: {
+        id: market.id,
+      },
+    });
 
-  // async getUserById(id: string) {
-  //   const user = prisma.user.findUnique({
-  //     where: {
-  //       id,
-  //     },
-  //   });
+    if (!existingMarket) {
+      throw new ResponseError(404, "Market not found");
+    }
 
-  //   if (!user) {
-  //     throw new ResponseError(404, "User not found");
-  //   }
-
-  //   return user;
-  // }
-
-  // async updateUser(user: User) {
-  //   const existingUser = await prisma.user.findFirst({
-  //     where: {
-  //       id: user.id,
-  //     },
-  //   });
-
-  //   if (!existingUser) {
-  //     throw new ResponseError(404, "User not found");
-  //   }
-
-  //   return prisma.user.update({
-  //     where: {
-  //       id: user.id,
-  //     },
-  //     data: {
-  //       ...user,
-  //     },
-  //   });
-  // }
+    return prisma.market.update({
+      where: {
+        id: market.id,
+      },
+      data: {
+        ...market,
+      },
+    });
+  }
 
   // async deleteUserById(id: string) {
   //   const existingUser = await prisma.user.findFirst({

@@ -13,7 +13,12 @@ marketRouter.post(
   authorizeAdmin,
   MarketController.createMarket
 );
-// marketRouter.patch("/users/:id", authenticate, UserController.updateUser);
+marketRouter.patch(
+  "/:id",
+  authenticate,
+  authorizeAdmin,
+  MarketController.updateMarket
+);
 // marketRouter.delete("/users/:id", authenticate, UserController.deleteUser);
 
 export default marketRouter;

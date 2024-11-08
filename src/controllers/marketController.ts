@@ -34,12 +34,18 @@ class MarketController {
     createResponse(res, 200, "Market retrieved successfully", market);
   }
 
-  // async updateUser(req: Request, res: Response, next: NextFunction) {
-  //   const { id } = req.params;
-  //   const data: any = UpdateUserRequest.parse(req.body);
-  //   const user = await this.userService.updateUser({ id, ...data });
-  //   createResponse(res, 200, "User updated successfully", user);
-  // }
+  async updateMarket(req: Request, res: Response, next: NextFunction) {
+    let { id } = req.params;
+    const idNew = parseInt(id);
+    const data: any = UpdateMarketRequest.parse(req.body);
+    console.log(data);
+
+    const market = await this.marketService.updateMarket({
+      id: idNew,
+      ...data,
+    });
+    createResponse(res, 200, "Market updated successfully", market);
+  }
 
   // async deleteUser(req: Request, res: Response, next: NextFunction) {
   //   const { id } = req.params;
