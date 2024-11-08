@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import userRoutes from "./routes/userRoutes";
+import marketRoutes from "./routes/marketRoutes";
 import errorHandler from "./middlewares/errorHandler";
 import { User } from "@prisma/client";
 
@@ -20,7 +21,9 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use(express.json());
 
-app.use("/api", userRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/markets", marketRoutes);
+
 app.use(errorHandler as any);
 
 app.listen(PORT, () => {

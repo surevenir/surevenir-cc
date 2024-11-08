@@ -3,17 +3,17 @@ import UserController from "../controllers/userController";
 import authorizeAdmin from "../middlewares/authorizeAdmin";
 import authenticate from "../middlewares/authenticate";
 
-const router = express.Router();
+const userRouter = express.Router();
 
-router.get("/users", authenticate, UserController.getAllUsers);
-router.get(
-  "/users/admin",
+userRouter.get("/", authenticate, UserController.getAllUsers);
+userRouter.get(
+  "/admin",
   authenticate,
   authorizeAdmin,
   UserController.getUserAdmin
 );
-router.post("/users", UserController.createUser);
-router.patch("/users/:id", authenticate, UserController.updateUser);
-router.delete("/users/:id", authenticate, UserController.deleteUser);
+userRouter.post("/", UserController.createUser);
+userRouter.patch("/:id", authenticate, UserController.updateUser);
+userRouter.delete("/:id", authenticate, UserController.deleteUser);
 
-export default router;
+export default userRouter;

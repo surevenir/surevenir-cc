@@ -4,16 +4,6 @@ import { Market } from "@prisma/client";
 
 class MarketService {
   async createMarket(market: Market) {
-    // make sure id is unique
-    const existingMarket = await prisma.market.findFirst({
-      where: {
-        OR: [{ id: market.id }],
-      },
-    });
-
-    if (existingMarket?.id === market.id)
-      throw new ResponseError(409, "Market already exists");
-
     return prisma.market.create({
       data: {
         ...market,

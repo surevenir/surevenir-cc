@@ -17,6 +17,8 @@ class MarketController {
 
   async createMarket(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateMarketRequest.parse(req.body);
+    console.log(data);
+
     const market = await this.marketService.createMarket(data);
     createResponse(res, 201, "Market created successfully", market);
   }
@@ -29,7 +31,7 @@ class MarketController {
   async getMarketById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const market = await this.marketService.getMarketById(parseInt(id));
-    createResponse(res, 200, "Admin users retrieved successfully", market);
+    createResponse(res, 200, "Market retrieved successfully", market);
   }
 
   // async updateUser(req: Request, res: Response, next: NextFunction) {

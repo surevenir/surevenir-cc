@@ -1,16 +1,15 @@
 import { z } from "zod";
 
 const CreateMarketRequest = z.object({
-  id: z.string(),
   name: z.string().min(3),
-  dascription: z.string().min(3),
-  longitude: z.string().min(3),
-  latitude: z.string().min(3),
+  description: z.string().min(3).nullable(),
+  longitude: z.string().min(3).nullable(),
+  latitude: z.string().min(3).nullable(),
 });
 
 const UpdateMarketRequest = z.object({
   name: z.string().min(3).optional(),
-  dascription: z.string().min(3).optional(),
+  description: z.string().min(3).optional(),
   longitude: z.string().min(3).optional(),
   latitude: z.string().min(3).optional(),
 });
