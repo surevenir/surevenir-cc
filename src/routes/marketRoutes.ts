@@ -19,6 +19,11 @@ marketRouter.patch(
   authorizeAdmin,
   MarketController.updateMarket
 );
-// marketRouter.delete("/users/:id", authenticate, UserController.deleteUser);
+marketRouter.delete(
+  "/:id",
+  authenticate,
+  authorizeAdmin,
+  MarketController.deleteMarket
+);
 
 export default marketRouter;

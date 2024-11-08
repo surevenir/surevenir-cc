@@ -47,11 +47,12 @@ class MarketController {
     createResponse(res, 200, "Market updated successfully", market);
   }
 
-  // async deleteUser(req: Request, res: Response, next: NextFunction) {
-  //   const { id } = req.params;
-  //   await this.userService.deleteUserById(id);
-  //   createResponse(res, 200, "User deleted successfully", { id });
-  // }
+  async deleteMarket(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const idNew = parseInt(id);
+    await this.marketService.deleteMarketById(idNew);
+    createResponse(res, 200, "Market deleted successfully", { id });
+  }
 }
 
 export default new MarketController();

@@ -50,23 +50,23 @@ class MarketService {
     });
   }
 
-  // async deleteUserById(id: string) {
-  //   const existingUser = await prisma.user.findFirst({
-  //     where: {
-  //       id,
-  //     },
-  //   });
+  async deleteMarketById(id: number) {
+    const existingMarket = await prisma.market.findFirst({
+      where: {
+        id,
+      },
+    });
 
-  //   if (!existingUser) {
-  //     throw new ResponseError(404, "User not found");
-  //   }
+    if (!existingMarket) {
+      throw new ResponseError(404, "Market not found");
+    }
 
-  //   return prisma.user.delete({
-  //     where: {
-  //       id,
-  //     },
-  //   });
-  // }
+    return prisma.market.delete({
+      where: {
+        id,
+      },
+    });
+  }
 }
 
 export default MarketService;
