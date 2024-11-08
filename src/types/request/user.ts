@@ -5,9 +5,14 @@ const CreateUserRequest = z.object({
   full_name: z.string().min(3),
   username: z.string().min(3),
   email: z.string().email(),
-  provider: z.enum(["GOOGLE", "EMAIL"]),
-  password: z.string().optional(),
+  password: z.string().min(3).nullable(),
+  phone: z.string().min(10).nullable(),
   role: z.enum(["USER", "ADMIN", "MERCHANT"]),
+  provider: z.enum(["GOOGLE", "EMAIL"]),
+  longitude: z.string().nullable(),
+  latitude: z.string().nullable(),
+  address: z.string().nullable(),
+  profile_image_url: z.string().nullable(),
 });
 
 const UpdateUserRequest = z.object({

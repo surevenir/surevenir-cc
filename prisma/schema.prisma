@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id                String   @id
+  id                String   @id @unique
   full_name         String
   username          String   @unique
   email             String   @unique
@@ -38,7 +38,7 @@ model User {
 }
 
 model Market {
-  id          Int      @id @default(autoincrement())
+  id          Int    @id @unique @default(autoincrement())
   name        String
   description String?
   longitude   String?
@@ -52,7 +52,7 @@ model Market {
 }
 
 model Merchant {
-  id                Int      @id @default(autoincrement())
+  id                Int       @id @unique @default(autoincrement())
   name              String
   profile_image_url String?
   description       String?
@@ -71,7 +71,7 @@ model Merchant {
 }
 
 model Category {
-  id        Int      @id @default(autoincrement())
+  id        Int      @id @unique @default(autoincrement())
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
@@ -82,7 +82,7 @@ model Category {
 }
 
 model ProductCategory {
-  id          Int @id @default(autoincrement())
+  id          Int    @id @unique @default(autoincrement())
   product_id  Int
   category_id Int
 
@@ -93,7 +93,7 @@ model ProductCategory {
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
+  id          Int    @id @unique @default(autoincrement())
   name        String
   description String?
   price       Float
@@ -110,7 +110,7 @@ model Product {
 }
 
 model Review {
-  id         Int      @id @default(autoincrement())
+  id         Int    @id @unique @default(autoincrement())
   rating     Int
   comment    String?
   user_id    String
@@ -125,13 +125,13 @@ model Review {
 }
 
 model Cart {
-  id          Int      @id @default(autoincrement())
+  id          Int    @id @unique @default(autoincrement())
   user_id     String
   product_id  Int
   quantity    Int
   total_price Float
   is_checkout Boolean  @default(false)
-  checkout_id String?
+  checkout_id Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
 
@@ -143,7 +143,7 @@ model Cart {
 }
 
 model Checkout {
-  id          String   @id @default(uuid())
+  id          Int   @id @unique @default(autoincrement())
   user_id     String
   total_price Float
   merchant_id Int
@@ -157,7 +157,7 @@ model Checkout {
 }
 
 model Images {
-  id        Int      @id @default(autoincrement())
+  id        Int    @id @unique @default(autoincrement())
   item_id   Int
   url       String
   type      String
@@ -168,7 +168,7 @@ model Images {
 }
 
 model History {
-  id        Int      @id @default(autoincrement())
+  id        Int    @id @unique @default(autoincrement())
   predict   String
   image_url String
   createdAt DateTime @default(now())
