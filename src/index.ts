@@ -3,6 +3,7 @@ import userRoutes from "./routes/userRoutes";
 import marketRoutes from "./routes/marketRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import merchantRoutes from "./routes/merchantRoutes";
+import productRoutes from "./routes/productRoutes";
 import errorHandler from "./middlewares/errorHandler";
 import { User } from "@prisma/client";
 
@@ -27,6 +28,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/markets", marketRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/merchants", merchantRoutes);
+app.use("/api/products", productRoutes);
 
 app.use(errorHandler as any);
 
