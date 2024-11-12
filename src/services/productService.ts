@@ -29,6 +29,34 @@ class ProductService {
     return product;
   }
 
+  async getProductByQuery(sort_by: string, category: string) {
+    const product = await prisma.product.findMany({
+      where: {
+        product_categories: {
+          some: {
+            category: {
+              name: category ? category : undefined,
+            },
+          },
+        },
+      },
+      orderBy: sort_by ? { [sort_by]: "asc" } : undefined,
+      include: {
+        product_categories: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    });
+
+    if (!product || product.length === 0) {
+      throw new ResponseError(404, "Product not found");
+    }
+
+    return product;
+  }
+
   async updateProduct(product: Product) {
     const existingProduct = await prisma.product.findFirst({
       where: {
