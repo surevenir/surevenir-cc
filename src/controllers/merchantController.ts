@@ -6,17 +6,37 @@ import {
 } from "../types/request/merchant";
 import Controller from "../utils/controllerDecorator";
 import MerchantService from "../services/merchantService";
+import UserService from "../services/userService";
+import MarketService from "../services/marketService";
 
 @Controller
 class MerchantController {
   merchantService: MerchantService;
+  userService: UserService;
+  marketService: MarketService;
 
   constructor() {
     this.merchantService = new MerchantService();
+    this.userService = new UserService();
+    this.marketService = new MarketService();
   }
 
   async createMerchant(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateMerchantRequest.parse(req.body);
+    const userId = req.body.user_id;
+    const marketId = req.body.market_id;
+    const user = await this.userService.getUserById(userId);
+    const market = await this.marketService.getMarketById(marketId);
+    if (user == null || market == null) {
+      const text =
+        user == null && market == null
+          ? "User and market"
+          : user == null
+          ? "User"
+          : "Market";
+      createResponse(res, 404, `${text} not found`, null);
+      return;
+    }
 
     const merchant = await this.merchantService.createMerchant(data);
     createResponse(res, 201, "Merchant created successfully", merchant);
