@@ -17,29 +17,35 @@ class MarketController {
 
   async createMarket(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateMarketRequest.parse(req.body);
-
     const market = await this.marketService.createMarket(data);
     createResponse(res, 201, "Market created successfully", market);
   }
 
   async getAllMarkets(req: Request, res: Response, next: NextFunction) {
     const markets = await this.marketService.getAllMarkets();
-    createResponse(res, 200, "Markets retrieved successfully", markets);
+    if (markets.length > 0) {
+      createResponse(res, 200, "Markets retrieved successfully", markets);
+    } else {
+      createResponse(res, 404, "Markets not found", []);
+    }
   }
 
   async getMarketById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const market = await this.marketService.getMarketById(parseInt(id));
-    createResponse(res, 200, "Market retrieved successfully", market);
+    if (market != null) {
+      createResponse(res, 200, "Market retrieved successfully", market);
+    } else {
+      createResponse(res, 404, "Market not found", market);
+    }
   }
 
   async updateMarket(req: Request, res: Response, next: NextFunction) {
     let { id } = req.params;
-    const idNew = parseInt(id);
     const data: any = UpdateMarketRequest.parse(req.body);
 
     const market = await this.marketService.updateMarket({
-      id: idNew,
+      id: parseInt(id),
       ...data,
     });
     createResponse(res, 200, "Market updated successfully", market);
@@ -47,8 +53,7 @@ class MarketController {
 
   async deleteMarket(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const idNew = parseInt(id);
-    await this.marketService.deleteMarketById(idNew);
+    await this.marketService.deleteMarketById(parseInt(id));
     createResponse(res, 200, "Market deleted successfully", { id });
   }
 }

@@ -24,22 +24,28 @@ class CategoryController {
 
   async getAllCategories(req: Request, res: Response, next: NextFunction) {
     const categories = await this.categoryService.getAllCategories();
-    createResponse(res, 200, "Categories retrieved successfully", categories);
+    if (categories.length > 0) {
+      createResponse(res, 200, "Categories retrieved successfully", categories);
+    } else {
+      createResponse(res, 404, "Categories not found", []);
+    }
   }
 
   async getCategoryById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const category = await this.categoryService.getCategoryById(parseInt(id));
-    createResponse(res, 200, "Category retrieved successfully", category);
+    if (category !== null) {
+      createResponse(res, 200, "Category retrieved successfully", category);
+    } else {
+      createResponse(res, 404, "Category not found", []);
+    }
   }
 
   async updateCategory(req: Request, res: Response, next: NextFunction) {
     let { id } = req.params;
-    const idNew = parseInt(id);
     const data: any = UpdateCategoryRequest.parse(req.body);
-
     const category = await this.categoryService.updateCategory({
-      id: idNew,
+      id: parseInt(id),
       ...data,
     });
     createResponse(res, 200, "Category updated successfully", category);

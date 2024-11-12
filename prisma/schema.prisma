@@ -54,7 +54,6 @@ model Market {
 model Merchant {
   id                Int       @id @unique @default(autoincrement())
   name              String
-  profile_image_url String?
   description       String?
   longitude         String?
   latitude          String?
