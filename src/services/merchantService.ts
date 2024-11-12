@@ -3,7 +3,7 @@ import ResponseError from "../utils/responseError";
 import { Merchant } from "@prisma/client";
 
 class MerchantService {
-  async createmerchant(merchant: Merchant) {
+  async createMerchant(merchant: Merchant) {
     return prisma.merchant.create({
       data: {
         ...merchant,

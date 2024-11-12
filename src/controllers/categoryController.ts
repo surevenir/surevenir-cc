@@ -53,8 +53,7 @@ class CategoryController {
 
   async deleteCategory(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const idNew = parseInt(id);
-    await this.categoryService.deleteCategoryById(idNew);
+    await this.categoryService.deleteCategoryById(parseInt(id));
     createResponse(res, 200, "Category deleted successfully", { id });
   }
 }
