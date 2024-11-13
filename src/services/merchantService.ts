@@ -46,6 +46,7 @@ class MerchantService {
       },
       data: {
         ...merchant,
+        updatedAt: new Date(),
       },
     });
   }

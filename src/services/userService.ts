@@ -86,6 +86,7 @@ class UserService {
       },
       data: {
         ...user,
+        updatedAt: new Date(),
       },
     });
   }

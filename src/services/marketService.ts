@@ -46,6 +46,7 @@ class MarketService {
       },
       data: {
         ...market,
+        updatedAt: new Date(),
       },
     });
   }

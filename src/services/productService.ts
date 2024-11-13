@@ -74,6 +74,7 @@ class ProductService {
       },
       data: {
         ...product,
+        updatedAt: new Date(),
       },
     });
   }

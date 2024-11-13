@@ -46,6 +46,7 @@ class ProductCategoryService {
       },
       data: {
         ...productCategory,
+        updatedAt: new Date(),
       },
     });
   }

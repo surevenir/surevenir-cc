@@ -84,6 +84,8 @@ model ProductCategory {
   id          Int    @id @unique @default(autoincrement())
   product_id  Int
   category_id Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 
   product  Product  @relation(fields: [product_id], references: [id])
   category Category @relation(fields: [category_id], references: [id])
