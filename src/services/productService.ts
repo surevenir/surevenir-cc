@@ -4,7 +4,7 @@ import { Product } from "@prisma/client";
 
 class ProductService {
   async createProduct(product: Product) {
-    const existingMerchant = await prisma.product.findFirst({
+    const existingMerchant = await prisma.merchant.findFirst({
       where: {
         id: product.merchant_id,
       },
@@ -39,7 +39,7 @@ class ProductService {
     return product;
   }
 
-  async getProductByQuery(sort_by: string, category: string) {
+  async getProductByQuery(sort_by: string) {
     const sortOptions: Record<
       string,
       { column: string; direction: "asc" | "desc" }
@@ -53,24 +53,27 @@ class ProductService {
 
     const sortOption = sortOptions[sort_by] || sortOptions.newest;
 
+    // TODO:
+    // sort by category
+
     const product = await prisma.product.findMany({
-      where: {
-        product_categories: {
-          some: {
-            category: {
-              name: category !== "all" ? category : undefined,
-            },
-          },
-        },
-      },
+      // where: {
+      //   product_categories: {
+      //     some: {
+      //       category: {
+      //         name: category !== "all" ? category : undefined,
+      //       },
+      //     },
+      //   },
+      // },
       orderBy: { [sortOption.column]: sortOption.direction },
-      include: {
-        product_categories: {
-          include: {
-            category: true,
-          },
-        },
-      },
+      // include: {
+      //   product_categories: {
+      //     include: {
+      //       category: true,
+      //     },
+      //   },
+      // },
     });
 
     if (!product || product.length === 0) {
@@ -87,15 +90,15 @@ class ProductService {
       },
     });
 
-    if (!existingProduct) {
-      throw new ResponseError(404, "Product not found");
-    }
-
     const existingMerchant = await prisma.merchant.findFirst({
       where: {
         id: product.merchant_id,
       },
     });
+
+    if (!existingProduct) {
+      throw new ResponseError(404, "Product not found");
+    }
 
     if (!existingMerchant) {
       throw new ResponseError(404, "Merchant not found");

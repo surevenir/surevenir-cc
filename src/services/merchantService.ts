@@ -4,6 +4,30 @@ import { Merchant } from "@prisma/client";
 
 class MerchantService {
   async createMerchant(merchant: Merchant) {
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        id: merchant.user_id,
+      },
+    });
+
+    const existingMarket = await prisma.market.findFirst({
+      where: {
+        id: merchant.market_id,
+      },
+    });
+
+    if (!existingUser && !existingMarket) {
+      throw new ResponseError(404, "User and market not found");
+    }
+
+    if (!existingUser) {
+      throw new ResponseError(404, "User not found");
+    }
+
+    if (!existingMarket) {
+      throw new ResponseError(404, "Market not found");
+    }
+
     return prisma.merchant.create({
       data: {
         ...merchant,
@@ -36,8 +60,32 @@ class MerchantService {
       },
     });
 
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        id: merchant.user_id,
+      },
+    });
+
+    const existingMarket = await prisma.market.findFirst({
+      where: {
+        id: merchant.market_id,
+      },
+    });
+
     if (!existingMerchant) {
       throw new ResponseError(404, "Merchant not found");
+    }
+
+    if (!existingUser && !existingMarket) {
+      throw new ResponseError(404, "User and market not found");
+    }
+
+    if (!existingUser) {
+      throw new ResponseError(404, "User not found");
+    }
+
+    if (!existingMarket) {
+      throw new ResponseError(404, "Market not found");
     }
 
     return prisma.merchant.update({

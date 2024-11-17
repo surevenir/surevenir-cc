@@ -57,10 +57,13 @@ class ProductController {
 
   async getProductByQuery(req: Request, res: Response, next: NextFunction) {
     try {
-      const { sort_by = "newest", category = "all" } = req.query;
+      const { sort_by = "newest" } = req.query;
+
+      // TODO:
+      // sort by category
+
       const product = await this.productService.getProductByQuery(
-        sort_by as string,
-        category as string
+        sort_by as string
       );
 
       if (product && product.length > 0) {
