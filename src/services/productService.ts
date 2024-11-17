@@ -4,6 +4,16 @@ import { Product } from "@prisma/client";
 
 class ProductService {
   async createProduct(product: Product) {
+    const existingMerchant = await prisma.product.findFirst({
+      where: {
+        id: product.merchant_id,
+      },
+    });
+
+    if (!existingMerchant) {
+      throw new ResponseError(404, "Merchant not found");
+    }
+
     return prisma.product.create({
       data: {
         ...product,
@@ -16,7 +26,7 @@ class ProductService {
   }
 
   async getProductById(id: number) {
-    const product = prisma.product.findUnique({
+    const product = await prisma.product.findUnique({
       where: {
         id,
       },
@@ -30,17 +40,30 @@ class ProductService {
   }
 
   async getProductByQuery(sort_by: string, category: string) {
+    const sortOptions: Record<
+      string,
+      { column: string; direction: "asc" | "desc" }
+    > = {
+      newest: { column: "createdAt", direction: "desc" },
+      oldest: { column: "createdAt", direction: "asc" },
+      price_asc: { column: "price", direction: "asc" },
+      price_desc: { column: "price", direction: "desc" },
+      popular: { column: "popularity", direction: "desc" },
+    };
+
+    const sortOption = sortOptions[sort_by] || sortOptions.newest;
+
     const product = await prisma.product.findMany({
       where: {
         product_categories: {
           some: {
             category: {
-              name: category ? category : undefined,
+              name: category !== "all" ? category : undefined,
             },
           },
         },
       },
-      orderBy: sort_by ? { [sort_by]: "asc" } : undefined,
+      orderBy: { [sortOption.column]: sortOption.direction },
       include: {
         product_categories: {
           include: {
@@ -66,6 +89,16 @@ class ProductService {
 
     if (!existingProduct) {
       throw new ResponseError(404, "Product not found");
+    }
+
+    const existingMerchant = await prisma.merchant.findFirst({
+      where: {
+        id: product.merchant_id,
+      },
+    });
+
+    if (!existingMerchant) {
+      throw new ResponseError(404, "Merchant not found");
     }
 
     return prisma.product.update({

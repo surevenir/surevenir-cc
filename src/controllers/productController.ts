@@ -6,13 +6,16 @@ import {
 } from "../types/request/product";
 import Controller from "../utils/controllerDecorator";
 import ProductService from "../services/productService";
+import MerchantService from "../services/merchantService";
 
 @Controller
 class ProductController {
   productService: ProductService;
+  merchantService: MerchantService;
 
   constructor() {
     this.productService = new ProductService();
+    this.merchantService = new MerchantService();
   }
 
   async createProduct(req: Request, res: Response, next: NextFunction) {
@@ -41,9 +44,9 @@ class ProductController {
   async getProductById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const Product = await this.productService.getProductById(parseInt(id));
-      if (Product !== null) {
-        createResponse(res, 200, "Product retrieved successfully", Product);
+      const product = await this.productService.getProductById(parseInt(id));
+      if (product !== null) {
+        createResponse(res, 200, "Product retrieved successfully", product);
       } else {
         createResponse(res, 404, "Product not found", []);
       }
@@ -74,10 +77,12 @@ class ProductController {
     try {
       let { id } = req.params;
       const data: any = UpdateProductRequest.parse(req.body);
+
       const product = await this.productService.updateProduct({
         id: parseInt(id),
         ...data,
       });
+
       createResponse(res, 200, "Product updated successfully", product);
     } catch (error) {
       next(error);

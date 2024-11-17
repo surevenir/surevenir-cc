@@ -64,6 +64,21 @@ class MerchantController {
   async updateMerchant(req: Request, res: Response, next: NextFunction) {
     let { id } = req.params;
     const data: any = UpdateMerchantRequest.parse(req.body);
+    const userId = req.body.user_id;
+    const marketId = req.body.market_id;
+    const user = await this.userService.getUserById(userId);
+    const market = await this.marketService.getMarketById(marketId);
+    if (user == null || market == null) {
+      const text =
+        user == null && market == null
+          ? "User and market"
+          : user == null
+          ? "User"
+          : "Market";
+      createResponse(res, 404, `${text} not found`, null);
+      return;
+    }
+
     const Merchant = await this.merchantService.updateMerchant({
       id: parseInt(id),
       ...data,
