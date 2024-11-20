@@ -2,7 +2,7 @@ import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
 import { Review } from "@prisma/client";
 
-class ReviewCategoryService {
+class ReviewService {
   async createReview(review: Review) {
     const existingProduct = await prisma.product.findFirst({
       where: {
@@ -53,7 +53,7 @@ class ReviewCategoryService {
     return review;
   }
 
-  async updatereview(review: Review) {
+  async updateReview(review: Review) {
     const existingProduct = await prisma.product.findFirst({
       where: {
         id: review.product_id,
@@ -100,14 +100,14 @@ class ReviewCategoryService {
   }
 
   async deleteReviewById(id: number) {
-    const existingreview = await prisma.review.findFirst({
+    const existingReview = await prisma.review.findFirst({
       where: {
         id,
       },
     });
 
-    if (!existingreview) {
-      throw new ResponseError(404, "Product Category not found");
+    if (!existingReview) {
+      throw new ResponseError(404, "Review not found");
     }
 
     return prisma.review.delete({
@@ -118,4 +118,4 @@ class ReviewCategoryService {
   }
 }
 
-export default ReviewCategoryService;
+export default ReviewService;
