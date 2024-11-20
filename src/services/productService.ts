@@ -83,6 +83,25 @@ class ProductService {
     return product;
   }
 
+  async getProductWithReviews(id: number) {
+    const productWithReviews = await prisma.product.findUnique({
+      where: { id: id },
+      include: {
+        reviews: {
+          include: {
+            user: true, // Mengambil detail user jika diperlukan
+          },
+        },
+      },
+    });
+
+    if (!productWithReviews) {
+      throw new ResponseError(404, "Product not found");
+    }
+
+    return productWithReviews;
+  }
+
   async updateProduct(product: Product) {
     const existingProduct = await prisma.product.findFirst({
       where: {
