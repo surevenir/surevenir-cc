@@ -7,6 +7,11 @@ const productRouter = express.Router();
 
 productRouter.get("/", authenticate, ProductController.getProductByQuery);
 productRouter.get("/:id", authenticate, ProductController.getProductById);
+productRouter.get(
+  "/:id/reviews",
+  authenticate,
+  ProductController.getProductWithReviews
+);
 productRouter.post(
   "/",
   authenticate,

@@ -39,7 +39,7 @@ class ProductService {
     return product;
   }
 
-  async getProductByQuery(sort_by: string) {
+  async getProductByQuery(sort_by: string, category: string) {
     const sortOptions: Record<
       string,
       { column: string; direction: "asc" | "desc" }
@@ -53,27 +53,31 @@ class ProductService {
 
     const sortOption = sortOptions[sort_by] || sortOptions.newest;
 
-    // TODO:
-    // sort by category
-
     const product = await prisma.product.findMany({
-      // where: {
-      //   product_categories: {
-      //     some: {
-      //       category: {
-      //         name: category !== "all" ? category : undefined,
-      //       },
-      //     },
-      //   },
-      // },
+      where:
+        category !== "all"
+          ? {
+              product_categories: {
+                some: {
+                  category: {
+                    name: category,
+                  },
+                },
+              },
+            }
+          : undefined,
       orderBy: { [sortOption.column]: sortOption.direction },
-      // include: {
-      //   product_categories: {
-      //     include: {
-      //       category: true,
-      //     },
-      //   },
-      // },
+      include: {
+        product_categories: {
+          select: {
+            category: {
+              select: {
+                name: true, // Hanya menampilkan atribut `name` dari `category`
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!product || product.length === 0) {

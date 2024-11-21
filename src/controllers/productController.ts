@@ -57,16 +57,30 @@ class ProductController {
 
   async getProductByQuery(req: Request, res: Response, next: NextFunction) {
     try {
-      const { sort_by = "newest" } = req.query;
-
-      // TODO:
-      // sort by category
+      const { sort_by = "newest", category = "all" } = req.query;
 
       const product = await this.productService.getProductByQuery(
-        sort_by as string
+        sort_by as string,
+        category as string
       );
 
       if (product && product.length > 0) {
+        createResponse(res, 200, "Product retrieved successfully", product);
+      } else {
+        createResponse(res, 404, "Product not found", []);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getProductWithReviews(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const product = await this.productService.getProductWithReviews(
+        parseInt(id)
+      );
+      if (product !== null) {
         createResponse(res, 200, "Product retrieved successfully", product);
       } else {
         createResponse(res, 404, "Product not found", []);
