@@ -38,7 +38,7 @@ model User {
 }
 
 model Market {
-  id          Int    @id @unique @default(autoincrement())
+  id          Int      @id @unique @default(autoincrement())
   name        String
   description String?
   longitude   String?
@@ -52,15 +52,15 @@ model Market {
 }
 
 model Merchant {
-  id                Int       @id @unique @default(autoincrement())
-  name              String
-  description       String?
-  longitude         String?
-  latitude          String?
-  user_id           String   @unique
-  market_id         Int
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @default(now())
+  id          Int      @id @unique @default(autoincrement())
+  name        String
+  description String?
+  longitude   String?
+  latitude    String?
+  user_id     String   @unique
+  market_id   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
 
   user     User      @relation(fields: [user_id], references: [id])
   market   Market    @relation(fields: [market_id], references: [id])
@@ -81,11 +81,11 @@ model Category {
 }
 
 model ProductCategory {
-  id          Int    @id @unique @default(autoincrement())
+  id          Int      @id @unique @default(autoincrement())
   product_id  Int
   category_id Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
 
   product  Product  @relation(fields: [product_id], references: [id])
   category Category @relation(fields: [category_id], references: [id])
@@ -94,7 +94,7 @@ model ProductCategory {
 }
 
 model Product {
-  id          Int    @id @unique @default(autoincrement())
+  id          Int      @id @unique @default(autoincrement())
   name        String
   description String?
   price       Float
@@ -106,12 +106,13 @@ model Product {
   reviews            Review[]
   carts              Cart[]
   product_categories ProductCategory[]
+  checkout_details   CheckoutDetails[]
 
   @@map("products")
 }
 
 model Review {
-  id         Int    @id @unique @default(autoincrement())
+  id         Int      @id @unique @default(autoincrement())
   rating     Int
   comment    String?
   user_id    String
@@ -126,39 +127,55 @@ model Review {
 }
 
 model Cart {
-  id          Int    @id @unique @default(autoincrement())
+  id          Int      @id @unique @default(autoincrement())
   user_id     String
   product_id  Int
   quantity    Int
   total_price Float
   is_checkout Boolean  @default(false)
-  checkout_id Int?
+  // checkout_id Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
 
-  user     User      @relation(fields: [user_id], references: [id])
-  product  Product   @relation(fields: [product_id], references: [id])
-  checkout Checkout? @relation(fields: [checkout_id], references: [id])
+  user    User    @relation(fields: [user_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+  // checkout Checkout? @relation(fields: [checkout_id], references: [id])
 
   @@map("carts")
 }
 
 model Checkout {
-  id          Int   @id @unique @default(autoincrement())
+  id          Int      @id @unique @default(autoincrement())
   user_id     String
   total_price Float
-  merchant_id Int
+  // merchant_id Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
 
-  user  User   @relation(fields: [user_id], references: [id])
-  carts Cart[]
+  user             User              @relation(fields: [user_id], references: [id])
+  checkout_details CheckoutDetails[]
+  // carts Cart[]
 
   @@map("checkouts")
 }
 
+model CheckoutDetails {
+  id          Int      @id @unique @default(autoincrement())
+  checkout_id Int
+  product_id  Int
+  total_price Float
+  cart_id     Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  checkout Checkout @relation(fields: [checkout_id], references: [id])
+  product  Product  @relation(fields: [product_id], references: [id])
+
+  @@map("checkout_details")
+}
+
 model Images {
-  id        Int    @id @unique @default(autoincrement())
+  id        Int      @id @unique @default(autoincrement())
   item_id   Int
   url       String
   type      String
@@ -169,7 +186,7 @@ model Images {
 }
 
 model History {
-  id        Int    @id @unique @default(autoincrement())
+  id        Int      @id @unique @default(autoincrement())
   predict   String
   image_url String
   createdAt DateTime @default(now())
