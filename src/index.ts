@@ -6,6 +6,7 @@ import merchantRoutes from "./routes/merchantRoutes";
 import productRoutes from "./routes/productRoutes";
 import productCategoryRoutes from "./routes/productCategoryRoutes";
 import reviewRoutes from "./routes/reviewRoutes";
+import cartRoutes from "./routes/cartRoutes";
 import errorHandler from "./middlewares/errorHandler";
 import { User } from "@prisma/client";
 
@@ -33,6 +34,7 @@ app.use("/api/merchants", merchantRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/product-categories", productCategoryRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/carts", cartRoutes);
 
 app.use(errorHandler as any);
 
