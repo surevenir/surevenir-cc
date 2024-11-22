@@ -1,6 +1,10 @@
 {
-  "rating": 3,
-  "comment": "Mantap",
-  "user_id": "user",
-  "product_id": 16
+  "data": [
+    {
+      "name": "Tes 3"
+    },
+    {
+      "name": "Tes 3"
+    }
+  ]
 }

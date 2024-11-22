@@ -4,6 +4,30 @@ import { Cart } from "@prisma/client";
 
 class CartService {
   async createCart(cart: Cart) {
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        id: cart.user_id,
+      },
+    });
+
+    const existingProduct = await prisma.product.findFirst({
+      where: {
+        id: cart.product_id,
+      },
+    });
+
+    if (!existingUser && !existingProduct) {
+      throw new ResponseError(404, "User and product not found");
+    }
+
+    if (!existingUser) {
+      throw new ResponseError(404, "User not found");
+    }
+
+    if (!existingProduct) {
+      throw new ResponseError(404, "Product not found");
+    }
+
     return prisma.cart.create({
       data: {
         ...cart,
@@ -38,6 +62,26 @@ class CartService {
 
     if (!existingCart) {
       throw new ResponseError(404, "Cart not found");
+    }
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        id: cart.user_id,
+      },
+    });
+
+    const existingProduct = await prisma.product.findFirst({
+      where: {
+        id: cart.product_id,
+      },
+    });
+
+    if (!existingUser) {
+      throw new ResponseError(404, "User not found");
+    }
+
+    if (!existingProduct) {
+      throw new ResponseError(404, "Product not found");
     }
 
     return prisma.cart.update({

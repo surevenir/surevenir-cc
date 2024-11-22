@@ -5,7 +5,7 @@ const CreateCartRequest = z.object({
   product_id: z.number(),
   quantity: z.number().min(0),
   is_checkout: z.boolean().default(false),
-  sub_total_price: z.number(),
+  total_price: z.number(),
 });
 
 const UpdateCartRequest = z.object({
@@ -13,7 +13,7 @@ const UpdateCartRequest = z.object({
   product_id: z.number().optional(),
   quantity: z.number().min(0).optional(),
   is_checkout: z.boolean().default(false).optional(),
-  sub_total_price: z.number().optional(),
+  total_price: z.number().optional(),
 });
 
 export { CreateCartRequest, UpdateCartRequest };
