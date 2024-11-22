@@ -29,31 +29,23 @@ class MerchantController {
 
   async getAllMerchants(req: Request, res: Response, next: NextFunction) {
     const merchants = await this.merchantService.getAllMerchants();
-    if (merchants.length > 0) {
-      createResponse(res, 200, "Merchants retrieved successfully", merchants);
-    } else {
-      createResponse(res, 404, "Merchants not found", []);
-    }
+    createResponse(res, 200, "Merchants retrieved successfully", merchants);
   }
 
   async getMerchantById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const merchant = await this.merchantService.getMerchantById(parseInt(id));
-    if (merchant !== null) {
-      createResponse(res, 200, "Merchant retrieved successfully", merchant);
-    } else {
-      createResponse(res, 404, "Merchant not found", []);
-    }
+    createResponse(res, 200, "Merchant retrieved successfully", merchant);
   }
 
   async updateMerchant(req: Request, res: Response, next: NextFunction) {
     let { id } = req.params;
     const data: any = UpdateMerchantRequest.parse(req.body);
-    const Merchant = await this.merchantService.updateMerchant({
+    const merchant = await this.merchantService.updateMerchant({
       id: parseInt(id),
       ...data,
     });
-    createResponse(res, 200, "Merchant updated successfully", Merchant);
+    createResponse(res, 200, "Merchant updated successfully", merchant);
   }
 
   async deleteMerchant(req: Request, res: Response, next: NextFunction) {

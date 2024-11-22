@@ -23,21 +23,13 @@ class MarketController {
 
   async getAllMarkets(req: Request, res: Response, next: NextFunction) {
     const markets = await this.marketService.getAllMarkets();
-    if (markets.length > 0) {
-      createResponse(res, 200, "Markets retrieved successfully", markets);
-    } else {
-      createResponse(res, 404, "Markets not found", []);
-    }
+    createResponse(res, 200, "Markets retrieved successfully", markets);
   }
 
   async getMarketById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const market = await this.marketService.getMarketById(parseInt(id));
-    if (market != null) {
-      createResponse(res, 200, "Market retrieved successfully", market);
-    } else {
-      createResponse(res, 404, "Market not found", market);
-    }
+    createResponse(res, 200, "Market retrieved successfully", market);
   }
 
   async updateMarket(req: Request, res: Response, next: NextFunction) {

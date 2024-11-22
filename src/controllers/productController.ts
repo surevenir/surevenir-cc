@@ -29,91 +29,51 @@ class ProductController {
   }
 
   async getAllProducts(req: Request, res: Response, next: NextFunction) {
-    try {
-      const products = await this.productService.getAllProducts();
-      if (products.length > 0) {
-        createResponse(res, 200, "Products retrieved successfully", products);
-      } else {
-        createResponse(res, 404, "Products not found", []);
-      }
-    } catch (error) {
-      next(error);
-    }
+    const products = await this.productService.getAllProducts();
+    createResponse(res, 200, "Products retrieved successfully", products);
   }
 
   async getProductById(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const product = await this.productService.getProductById(parseInt(id));
-      if (product !== null) {
-        createResponse(res, 200, "Product retrieved successfully", product);
-      } else {
-        createResponse(res, 404, "Product not found", []);
-      }
-    } catch (error) {
-      next(error);
-    }
+    const { id } = req.params;
+    const product = await this.productService.getProductById(parseInt(id));
+    createResponse(res, 200, "Product retrieved successfully", product);
   }
 
   async getProductByQuery(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { sort_by = "newest", category = "all" } = req.query;
+    const { sort_by = "newest", category = "all" } = req.query;
 
-      const product = await this.productService.getProductByQuery(
-        sort_by as string,
-        category as string
-      );
+    const product = await this.productService.getProductByQuery(
+      sort_by as string,
+      category as string
+    );
 
-      if (product && product.length > 0) {
-        createResponse(res, 200, "Product retrieved successfully", product);
-      } else {
-        createResponse(res, 404, "Product not found", []);
-      }
-    } catch (error) {
-      next(error);
-    }
+    createResponse(res, 200, "Product retrieved successfully", product);
   }
 
   async getProductWithReviews(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const product = await this.productService.getProductWithReviews(
-        parseInt(id)
-      );
-      if (product !== null) {
-        createResponse(res, 200, "Product retrieved successfully", product);
-      } else {
-        createResponse(res, 404, "Product not found", []);
-      }
-    } catch (error) {
-      next(error);
-    }
+    const { id } = req.params;
+    const product = await this.productService.getProductWithReviews(
+      parseInt(id)
+    );
+    createResponse(res, 200, "Product retrieved successfully", product);
   }
 
   async updateProduct(req: Request, res: Response, next: NextFunction) {
-    try {
-      let { id } = req.params;
-      const data: any = UpdateProductRequest.parse(req.body);
+    let { id } = req.params;
+    const data: any = UpdateProductRequest.parse(req.body);
 
-      const product = await this.productService.updateProduct({
-        id: parseInt(id),
-        ...data,
-      });
+    const product = await this.productService.updateProduct({
+      id: parseInt(id),
+      ...data,
+    });
 
-      createResponse(res, 200, "Product updated successfully", product);
-    } catch (error) {
-      next(error);
-    }
+    createResponse(res, 200, "Product updated successfully", product);
   }
 
   async deleteProduct(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      await this.productService.deleteProductById(parseInt(id));
-      createResponse(res, 200, "Product deleted successfully", { id });
-    } catch (error) {
-      next(error);
-    }
+    const { id } = req.params;
+    await this.productService.deleteProductById(parseInt(id));
+    createResponse(res, 200, "Product deleted successfully", { id });
   }
 }
 

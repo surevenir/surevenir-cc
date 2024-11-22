@@ -20,21 +20,13 @@ class CartController {
 
   async getAllCarts(req: Request, res: Response, next: NextFunction) {
     const carts = await this.cartService.getAllCarts();
-    if (carts.length > 0) {
-      createResponse(res, 200, "Carts retrieved successfully", carts);
-    } else {
-      createResponse(res, 404, "Carts not found", []);
-    }
+    createResponse(res, 200, "Carts retrieved successfully", carts);
   }
 
   async getCartById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const cart = await this.cartService.getCartById(parseInt(id));
-    if (cart !== null) {
-      createResponse(res, 200, "Cart retrieved successfully", cart);
-    } else {
-      createResponse(res, 404, "Cart not found", []);
-    }
+    createResponse(res, 200, "Cart retrieved successfully", cart);
   }
 
   async updateCart(req: Request, res: Response, next: NextFunction) {

@@ -23,21 +23,13 @@ class ReviewController {
 
   async getAllReviews(req: Request, res: Response, next: NextFunction) {
     const reviews = await this.reviewService.getAllReviews();
-    if (reviews.length > 0) {
-      createResponse(res, 200, "Reviews retrieved successfully", reviews);
-    } else {
-      createResponse(res, 404, "Reviews not found", []);
-    }
+    createResponse(res, 200, "Reviews retrieved successfully", reviews);
   }
 
   async getReviewById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const review = await this.reviewService.getReviewById(parseInt(id));
-    if (review !== null) {
-      createResponse(res, 200, "Review retrieved successfully", review);
-    } else {
-      createResponse(res, 404, "Review not found", []);
-    }
+    createResponse(res, 200, "Review retrieved successfully", review);
   }
 
   async updateReview(req: Request, res: Response, next: NextFunction) {
