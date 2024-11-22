@@ -53,6 +53,14 @@ class MerchantService {
     return merchant;
   }
 
+  async getProductsInMerchant(id: number) {
+    return prisma.product.findMany({
+      where: {
+        merchant_id: id,
+      },
+    });
+  }
+
   async updateMerchant(merchant: Merchant) {
     const existingMerchant = await prisma.merchant.findFirst({
       where: {

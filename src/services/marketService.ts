@@ -29,6 +29,14 @@ class MarketService {
     return market;
   }
 
+  async getMerchantsInMarket(id: number) {
+    return prisma.merchant.findMany({
+      where: {
+        market_id: id,
+      },
+    });
+  }
+
   async updateMarket(market: Market) {
     const existingMarket = await prisma.market.findFirst({
       where: {

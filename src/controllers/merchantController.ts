@@ -6,19 +6,13 @@ import {
 } from "../types/request/merchant";
 import Controller from "../utils/controllerDecorator";
 import MerchantService from "../services/merchantService";
-import UserService from "../services/userService";
-import MarketService from "../services/marketService";
 
 @Controller
 class MerchantController {
   merchantService: MerchantService;
-  userService: UserService;
-  marketService: MarketService;
 
   constructor() {
     this.merchantService = new MerchantService();
-    this.userService = new UserService();
-    this.marketService = new MarketService();
   }
 
   async createMerchant(req: Request, res: Response, next: NextFunction) {
@@ -36,6 +30,14 @@ class MerchantController {
     const { id } = req.params;
     const merchant = await this.merchantService.getMerchantById(parseInt(id));
     createResponse(res, 200, "Merchant retrieved successfully", merchant);
+  }
+
+  async getProductsInMerchant(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const products = await this.merchantService.getProductsInMerchant(
+      parseInt(id)
+    );
+    createResponse(res, 200, "Products in merchant retrieved successfully", products);
   }
 
   async updateMerchant(req: Request, res: Response, next: NextFunction) {

@@ -32,6 +32,12 @@ class MarketController {
     createResponse(res, 200, "Market retrieved successfully", market);
   }
 
+  async getMerchantsInMarket(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const merchants = await this.marketService.getMerchantsInMarket(parseInt(id));
+    createResponse(res, 200, "Merchants in market retrieved successfully", merchants);
+  }
+
   async updateMarket(req: Request, res: Response, next: NextFunction) {
     let { id } = req.params;
     const data: any = UpdateMarketRequest.parse(req.body);
