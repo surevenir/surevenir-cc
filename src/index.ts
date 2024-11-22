@@ -4,12 +4,12 @@ import marketRoutes from "./routes/marketRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import merchantRoutes from "./routes/merchantRoutes";
 import productRoutes from "./routes/productRoutes";
-import productCategoryRoutes from "./routes/productCategoryRoutes";
 import reviewRoutes from "./routes/reviewRoutes";
 import cartRoutes from "./routes/cartRoutes";
-import imageRoutes from "./routes/imageRoutes";
 import errorHandler from "./middlewares/errorHandler";
 import './types/global/authUser';
+import multer from "./middlewares/multer";
+import MediaService from "./services/mediaService";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,10 +25,14 @@ app.use("/api/markets", marketRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/merchants", merchantRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api/product-categories", productCategoryRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/carts", cartRoutes);
-app.use("/api/images", imageRoutes);
+
+app.post("/api/upload", multer.array("images", 10),(req: Request, res: Response) => {
+  const mediaService = new MediaService();
+  const files = req.files as Express.Multer.File[];
+});
+
 
 app.use(errorHandler as any);
 
