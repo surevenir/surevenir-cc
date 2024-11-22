@@ -1,9 +1,16 @@
 import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
 import { Product } from "@prisma/client";
+import MediaService, { MediaData, MediaType } from "./mediaService";
 
 class ProductService {
-  async createProduct(product: Product) {
+  mediaService: MediaService;
+
+  constructor() {
+    this.mediaService = new MediaService();
+  }
+
+  async createProduct(product: Product, files: Express.Request["files"]) {
     const existingMerchant = await prisma.merchant.findFirst({
       where: {
         id: product.merchant_id,
@@ -13,6 +20,8 @@ class ProductService {
     if (!existingMerchant) {
       throw new ResponseError(404, "Merchant not found");
     }
+
+    await this.uploadAndSaveMediasIfExist(files, product.id);
 
     return prisma.product.create({
       data: {
@@ -30,13 +39,47 @@ class ProductService {
       where: {
         id,
       },
+      include: {
+        merchant: {
+          select: {
+            id: true,
+            name: true,
+            market: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        product_categories: {
+          select: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        }
+      }
+    });
+
+    const imagesUrl = await prisma.images.findMany({
+      where: {
+        item_id: id,
+        type: MediaType.PRODUCT,
+      },
     });
 
     if (!product) {
       throw new ResponseError(404, "Product not found");
     }
 
-    return product;
+    return {
+      ...product,
+      images: imagesUrl.map((image) => image.url),
+    }
   }
 
   async getProductByQuery(sort_by: string, category: string) {
@@ -53,7 +96,7 @@ class ProductService {
 
     const sortOption = sortOptions[sort_by] || sortOptions.newest;
 
-    const product = await prisma.product.findMany({
+    const products = await prisma.product.findMany({
       where:
         category !== "all"
           ? {
@@ -68,11 +111,24 @@ class ProductService {
           : undefined,
       orderBy: { [sortOption.column]: sortOption.direction },
       include: {
+        merchant: {
+          select: {
+            id: true,
+            name: true,
+            market: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
         product_categories: {
           select: {
             category: {
               select: {
-                name: true, // Hanya menampilkan atribut `name` dari `category`
+                id: true,
+                name: true, 
               },
             },
           },
@@ -80,11 +136,7 @@ class ProductService {
       },
     });
 
-    if (!product || product.length === 0) {
-      throw new ResponseError(404, "Product not found");
-    }
-
-    return product;
+    return products;
   }
 
   async getProductWithReviews(id: number) {
@@ -106,7 +158,7 @@ class ProductService {
     return productWithReviews;
   }
 
-  async updateProduct(product: Product) {
+  async updateProduct(product: Product, files: Express.Request["files"]) {
     const existingProduct = await prisma.product.findFirst({
       where: {
         id: product.id,
@@ -126,6 +178,8 @@ class ProductService {
     if (!existingMerchant) {
       throw new ResponseError(404, "Merchant not found");
     }
+
+    await this.uploadAndSaveMediasIfExist(files, product.id);
 
     return prisma.product.update({
       where: {
@@ -154,6 +208,25 @@ class ProductService {
         id,
       },
     });
+  }
+
+  private async uploadAndSaveMediasIfExist(
+    files: Express.Request["files"],
+    productId: number
+  ) {
+    if (files && files.length != 0) {
+      const mediaUrls = await Promise.all(
+        (files as any).map((file: any) => this.mediaService.uploadMedia(file))
+      );
+
+      const mediaData: MediaData[] = mediaUrls.map((mediaUrl) => ({
+        url: mediaUrl,
+        itemId: productId,
+        type: MediaType.PRODUCT,
+      }));
+
+      await this.mediaService.saveMedias(mediaData);
+    }
   }
 }
 

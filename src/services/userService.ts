@@ -1,9 +1,16 @@
 import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
 import { User } from "@prisma/client";
+import MediaService from "./mediaService";
 
 class UserService {
-  async createUser(user: User) {
+  mediaService: MediaService;
+
+  constructor() {
+    this.mediaService = new MediaService();
+  }
+
+  async createUser(user: User, file: Express.Request["file"]) {
     // make sure id, username, email is unique
     const existingUser = await prisma.user.findFirst({
       where: {
@@ -21,6 +28,11 @@ class UserService {
       throw new ResponseError(409, "Username already used");
     if (existingUser?.email === user.email)
       throw new ResponseError(409, "Email already used");
+
+    if (file) {
+      const mediaUrl = await this.mediaService.uploadMedia(file);
+      user.profile_image_url = mediaUrl;
+    }
 
     return prisma.user.create({
       data: {
@@ -69,7 +81,7 @@ class UserService {
     return user;
   }
 
-  async updateUser(user: User) {
+  async updateUser(user: User, file: Express.Request["file"]) {
     const existingUser = await prisma.user.findFirst({
       where: {
         id: user.id,
@@ -78,6 +90,11 @@ class UserService {
 
     if (!existingUser) {
       throw new ResponseError(404, "User not found");
+    }
+
+    if (file) {
+      const mediaUrl = await this.mediaService.uploadMedia(file);
+      user.profile_image_url = mediaUrl;
     }
 
     return prisma.user.update({

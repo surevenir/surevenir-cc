@@ -21,7 +21,7 @@ class ProductController {
   async createProduct(req: Request, res: Response, next: NextFunction) {
     try {
       const data: any = CreateProductRequest.parse(req.body);
-      const product = await this.productService.createProduct(data);
+      const product = await this.productService.createProduct(data, req.files);
       createResponse(res, 201, "Product created successfully", product);
     } catch (error) {
       next(error);
@@ -65,7 +65,7 @@ class ProductController {
     const product = await this.productService.updateProduct({
       id: parseInt(id),
       ...data,
-    });
+    }, req.files);
 
     createResponse(res, 200, "Product updated successfully", product);
   }

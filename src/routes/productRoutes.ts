@@ -2,6 +2,7 @@ import express from "express";
 import ProductController from "../controllers/productController";
 import authorizeAdmin from "../middlewares/authorizeAdmin";
 import authenticate from "../middlewares/authenticate";
+import multer from "../middlewares/multer";
 
 const productRouter = express.Router();
 
@@ -16,12 +17,14 @@ productRouter.post(
   "/",
   authenticate,
   authorizeAdmin,
+  multer.array("images", 10),
   ProductController.createProduct
 );
 productRouter.patch(
   "/:id",
   authenticate,
   authorizeAdmin,
+  multer.array("images", 10),
   ProductController.updateProduct
 );
 productRouter.delete(

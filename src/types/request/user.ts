@@ -12,7 +12,6 @@ const CreateUserRequest = z.object({
   longitude: z.string().nullable(),
   latitude: z.string().nullable(),
   address: z.string().nullable(),
-  profile_image_url: z.string().nullable(),
 });
 
 const UpdateUserRequest = z.object({

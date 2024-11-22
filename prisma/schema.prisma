@@ -178,7 +178,7 @@ model Images {
   id        Int      @id @unique @default(autoincrement())
   item_id   Int?
   url       String?  @db.Text
-  type      String?
+  type      String? // product, merchant, market, user
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 

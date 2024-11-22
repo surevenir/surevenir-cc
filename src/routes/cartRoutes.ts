@@ -1,6 +1,5 @@
 import express from "express";
 import CartController from "../controllers/cartController";
-import authorizeAdmin from "../middlewares/authorizeAdmin";
 import authenticate from "../middlewares/authenticate";
 
 const cartRouter = express.Router();

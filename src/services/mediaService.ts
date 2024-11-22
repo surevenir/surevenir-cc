@@ -2,8 +2,21 @@ import { Storage } from "@google-cloud/storage";
 import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
 
+export enum MediaType {
+  PRODUCT = "product",
+  MARKET = "market",
+  REVIEW = "review",
+  MERCHANT = "merchant",
+}
+
+export type MediaData = {
+  url: string;
+  itemId: number;
+  type: MediaType;
+};
+
 class MediaService {
-  async uploadMedia(file: Express.Multer.File) {
+  async uploadMedia(file: Express.Multer.File): Promise<string> {
     const storage = new Storage({
       projectId: process.env.GOOGLE_PROJECT_ID,
       keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
@@ -33,12 +46,19 @@ class MediaService {
     });
   }
 
-  async saveMedia(itemId: number, url: string) {
-    return await prisma.images.create({
-      data: {
-        url,
-        item_id: itemId,
-      },
+  async saveMedias(medias: MediaData[]) {
+    if (medias.length === 0) {
+      throw new ResponseError(400, "Media is empty");
+    }
+
+    const data = medias.map((media) => ({
+      url: media.url,
+      item_id: media.itemId,
+      type: media.type,
+    }));
+
+    return await prisma.images.createMany({
+      data,
     });
   }
 

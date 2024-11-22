@@ -14,7 +14,7 @@ class UserController {
 
   async createUser(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateUserRequest.parse(req.body);
-    const user = await this.userService.createUser(data);
+    const user = await this.userService.createUser(data, req.file);
     createResponse(res, 201, "User created successfully", user);
   }
 
@@ -31,7 +31,7 @@ class UserController {
   async updateUser(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const data: any = UpdateUserRequest.parse(req.body);
-    const user = await this.userService.updateUser({ id, ...data });
+    const user = await this.userService.updateUser({ id, ...data }, req.file);
     createResponse(res, 200, "User updated successfully", user);
   }
 
