@@ -29,9 +29,7 @@ class CartService {
     }
 
     return prisma.cart.create({
-      data: {
-        ...cart,
-      },
+      data: cart,
     });
   }
 
@@ -64,7 +62,7 @@ class CartService {
       throw new ResponseError(404, "Cart not found");
     }
 
-    const existingUser = await prisma.user.findFirst({
+    const existingUser = await prisma.use.findFirst({
       where: {
         id: cart.user_id,
       },
@@ -88,10 +86,7 @@ class CartService {
       where: {
         id: cart.id,
       },
-      data: {
-        ...cart,
-        updatedAt: new Date(),
-      },
+      data: cart,
     });
   }
 

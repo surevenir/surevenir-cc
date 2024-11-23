@@ -9,7 +9,7 @@ import CategoryService from "../services/categoryService";
 
 @Controller
 class CategoryController {
-  categoryService: CategoryService;
+  private categoryService: CategoryService;
 
   constructor() {
     this.categoryService = new CategoryService();

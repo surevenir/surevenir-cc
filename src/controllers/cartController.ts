@@ -6,7 +6,7 @@ import CartService from "../services/cartService";
 
 @Controller
 class CartController {
-  cartService: CartService;
+  private cartService: CartService;
 
   constructor() {
     this.cartService = new CartService();

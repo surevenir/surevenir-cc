@@ -9,7 +9,7 @@ import MarketService from "../services/marketService";
 
 @Controller
 class MarketController {
-  marketService: MarketService;
+  private marketService: MarketService;
 
   constructor() {
     this.marketService = new MarketService();

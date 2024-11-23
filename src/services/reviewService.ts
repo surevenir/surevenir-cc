@@ -29,9 +29,7 @@ class ReviewService {
     }
 
     return prisma.review.create({
-      data: {
-        ...review,
-      },
+      data: review,
     });
   }
 
@@ -92,10 +90,7 @@ class ReviewService {
       where: {
         id: review.id,
       },
-      data: {
-        ...review,
-        updatedAt: new Date(),
-      },
+      data: review,
     });
   }
 

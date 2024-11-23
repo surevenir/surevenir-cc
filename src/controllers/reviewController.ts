@@ -9,7 +9,7 @@ import ReviewService from "../services/reviewService";
 
 @Controller
 class ReviewController {
-  reviewService: ReviewService;
+  private reviewService: ReviewService;
 
   constructor() {
     this.reviewService = new ReviewService();

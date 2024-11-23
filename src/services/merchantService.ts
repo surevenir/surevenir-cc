@@ -1,9 +1,16 @@
 import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
 import { Merchant } from "@prisma/client";
+import MediaService from "./mediaService";
 
 class MerchantService {
-  async createMerchant(merchant: Merchant) {
+  private mediaService: MediaService;
+
+  constructor() {
+    this.mediaService = new MediaService();
+  }
+
+  async createMerchant(merchant: Merchant, file: Express.Request["file"]) {
     const existingUser = await prisma.user.findFirst({
       where: {
         id: merchant.user_id,
@@ -28,15 +35,18 @@ class MerchantService {
       throw new ResponseError(404, "Market not found");
     }
 
+    if (file) {
+      const mediaUrl = await this.mediaService.uploadMedia(file);
+      merchant.profile_image_url = mediaUrl;
+    }
+
     return prisma.merchant.create({
-      data: {
-        ...merchant,
-      },
+      data: merchant,
     });
   }
 
   async getAllMerchants() {
-    return prisma.merchant.findMany();
+    const merchant = await prisma.merchant.findMany();
   }
 
   async getMerchantById(id: number) {
@@ -61,7 +71,7 @@ class MerchantService {
     });
   }
 
-  async updateMerchant(merchant: Merchant) {
+  async updateMerchant(merchant: Merchant, file: Express.Request["file"]) {
     const existingMerchant = await prisma.merchant.findFirst({
       where: {
         id: merchant.id,
@@ -96,14 +106,16 @@ class MerchantService {
       throw new ResponseError(404, "Market not found");
     }
 
+    if (file) {
+      const mediaUrl = await this.mediaService.uploadMedia(file);
+      merchant.profile_image_url = mediaUrl;
+    }
+
     return prisma.merchant.update({
       where: {
         id: merchant.id,
       },
-      data: {
-        ...merchant,
-        updatedAt: new Date(),
-      },
+      data: merchant,
     });
   }
 

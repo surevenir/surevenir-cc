@@ -9,7 +9,7 @@ import MerchantService from "../services/merchantService";
 
 @Controller
 class MerchantController {
-  merchantService: MerchantService;
+  private merchantService: MerchantService;
 
   constructor() {
     this.merchantService = new MerchantService();
@@ -17,7 +17,7 @@ class MerchantController {
 
   async createMerchant(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateMerchantRequest.parse(req.body);
-    const merchant = await this.merchantService.createMerchant(data);
+    const merchant = await this.merchantService.createMerchant(data, req.file);
     createResponse(res, 201, "Merchant created successfully", merchant);
   }
 
@@ -46,7 +46,7 @@ class MerchantController {
     const merchant = await this.merchantService.updateMerchant({
       id: parseInt(id),
       ...data,
-    });
+    }, req.file);
     createResponse(res, 200, "Merchant updated successfully", merchant);
   }
 

@@ -6,12 +6,12 @@ import multer from "../middlewares/multer";
 
 const productRouter = express.Router();
 
-productRouter.get("/", authenticate, ProductController.getProductByQuery);
+productRouter.get("/", authenticate, ProductController.getAllProducts);
 productRouter.get("/:id", authenticate, ProductController.getProductById);
 productRouter.get(
   "/:id/reviews",
   authenticate,
-  ProductController.getProductWithReviews
+  ProductController.getProductReviews
 );
 productRouter.post(
   "/",

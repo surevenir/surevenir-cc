@@ -10,8 +10,8 @@ import MerchantService from "../services/merchantService";
 
 @Controller
 class ProductController {
-  productService: ProductService;
-  merchantService: MerchantService;
+  private productService: ProductService;
+  private merchantService: MerchantService;
 
   constructor() {
     this.productService = new ProductService();
@@ -19,18 +19,9 @@ class ProductController {
   }
 
   async createProduct(req: Request, res: Response, next: NextFunction) {
-    try {
-      const data: any = CreateProductRequest.parse(req.body);
-      const product = await this.productService.createProduct(data, req.files);
-      createResponse(res, 201, "Product created successfully", product);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async getAllProducts(req: Request, res: Response, next: NextFunction) {
-    const products = await this.productService.getAllProducts();
-    createResponse(res, 200, "Products retrieved successfully", products);
+    const data: any = CreateProductRequest.parse(req.body);
+    const product = await this.productService.createProduct(data, req.files);
+    createResponse(res, 201, "Product created successfully", product);
   }
 
   async getProductById(req: Request, res: Response, next: NextFunction) {
@@ -39,10 +30,10 @@ class ProductController {
     createResponse(res, 200, "Product retrieved successfully", product);
   }
 
-  async getProductByQuery(req: Request, res: Response, next: NextFunction) {
+  async getAllProducts(req: Request, res: Response, next: NextFunction) {
     const { sort_by = "newest", category = "all" } = req.query;
 
-    const product = await this.productService.getProductByQuery(
+    const product = await this.productService.getAllProducts(
       sort_by as string,
       category as string
     );
@@ -50,9 +41,9 @@ class ProductController {
     createResponse(res, 200, "Product retrieved successfully", product);
   }
 
-  async getProductWithReviews(req: Request, res: Response, next: NextFunction) {
+  async getProductReviews(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const product = await this.productService.getProductWithReviews(
+    const product = await this.productService.getProductReviews(
       parseInt(id)
     );
     createResponse(res, 200, "Product retrieved successfully", product);
@@ -62,10 +53,13 @@ class ProductController {
     let { id } = req.params;
     const data: any = UpdateProductRequest.parse(req.body);
 
-    const product = await this.productService.updateProduct({
-      id: parseInt(id),
-      ...data,
-    }, req.files);
+    const product = await this.productService.updateProduct(
+      {
+        id: parseInt(id),
+        ...data,
+      },
+      req.files
+    );
 
     createResponse(res, 200, "Product updated successfully", product);
   }

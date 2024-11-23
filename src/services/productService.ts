@@ -4,7 +4,7 @@ import { Product } from "@prisma/client";
 import MediaService, { MediaData, MediaType } from "./mediaService";
 
 class ProductService {
-  mediaService: MediaService;
+  private mediaService: MediaService;
 
   constructor() {
     this.mediaService = new MediaService();
@@ -24,14 +24,8 @@ class ProductService {
     await this.uploadAndSaveMediasIfExist(files, product.id);
 
     return prisma.product.create({
-      data: {
-        ...product,
-      },
+      data: product,
     });
-  }
-
-  async getAllProducts() {
-    return prisma.product.findMany();
   }
 
   async getProductById(id: number) {
@@ -61,8 +55,8 @@ class ProductService {
               },
             },
           },
-        }
-      }
+        },
+      },
     });
 
     const imagesUrl = await prisma.images.findMany({
@@ -79,10 +73,10 @@ class ProductService {
     return {
       ...product,
       images: imagesUrl.map((image) => image.url),
-    }
+    };
   }
 
-  async getProductByQuery(sort_by: string, category: string) {
+  async getAllProducts(sort_by: string, category: string) {
     const sortOptions: Record<
       string,
       { column: string; direction: "asc" | "desc" }
@@ -96,7 +90,7 @@ class ProductService {
 
     const sortOption = sortOptions[sort_by] || sortOptions.newest;
 
-    const products = await prisma.product.findMany({
+    let products = await prisma.product.findMany({
       where:
         category !== "all"
           ? {
@@ -128,7 +122,7 @@ class ProductService {
             category: {
               select: {
                 id: true,
-                name: true, 
+                name: true,
               },
             },
           },
@@ -136,26 +130,52 @@ class ProductService {
       },
     });
 
-    return products;
-  }
-
-  async getProductWithReviews(id: number) {
-    const productWithReviews = await prisma.product.findUnique({
-      where: { id: id },
-      include: {
-        reviews: {
-          include: {
-            user: true, // Mengambil detail user jika diperlukan
-          },
+    const imagesUrl = await prisma.images.findMany({
+      where: {
+        item_id: {
+          in: products.map((product) => product.id),
         },
+        type: MediaType.PRODUCT,
       },
     });
 
-    if (!productWithReviews) {
-      throw new ResponseError(404, "Product not found");
-    }
+    products = products.map((product) => ({
+      ...product,
+      images: imagesUrl
+        .filter((image) => image.item_id === product.id)
+        .map((image) => image.url),
+    }));
 
-    return productWithReviews;
+    return products;
+  }
+
+  async getProductReviews(id: number) {
+    let reviews = await prisma.review.findMany({
+      where: {
+        product_id: id,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    const imagesUrl = await prisma.images.findMany({
+      where: {
+        item_id: {
+          in: reviews.map((review) => review.id),
+        },
+        type: MediaType.REVIEW,
+      },
+    });
+
+    reviews = reviews.map((review) => ({
+      ...review,
+      images: imagesUrl
+        .filter((image) => image.item_id === review.id)
+        .map((image) => image.url),
+    }));
+
+    return reviews;
   }
 
   async updateProduct(product: Product, files: Express.Request["files"]) {
@@ -185,10 +205,7 @@ class ProductService {
       where: {
         id: product.id,
       },
-      data: {
-        ...product,
-        updatedAt: new Date(),
-      },
+      data: product,
     });
   }
 

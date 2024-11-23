@@ -5,9 +5,7 @@ import { Category } from "@prisma/client";
 class CategoryService {
   async createCategory(category: Category) {
     return prisma.category.create({
-      data: {
-        ...category,
-      },
+      data: category,
     });
   }
 
@@ -44,10 +42,7 @@ class CategoryService {
       where: {
         id: category.id,
       },
-      data: {
-        ...category,
-        updatedAt: new Date(),
-      },
+      data: category,
     });
   }
 

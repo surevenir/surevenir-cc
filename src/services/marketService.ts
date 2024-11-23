@@ -52,10 +52,7 @@ class MarketService {
       where: {
         id: market.id,
       },
-      data: {
-        ...market,
-        updatedAt: new Date(),
-      },
+      data: market,
     });
   }
 

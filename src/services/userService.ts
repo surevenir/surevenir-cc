@@ -4,7 +4,7 @@ import { User } from "@prisma/client";
 import MediaService from "./mediaService";
 
 class UserService {
-  mediaService: MediaService;
+  private mediaService: MediaService;
 
   constructor() {
     this.mediaService = new MediaService();
@@ -35,9 +35,7 @@ class UserService {
     }
 
     return prisma.user.create({
-      data: {
-        ...user,
-      },
+      data: user,
     });
   }
 
@@ -101,10 +99,7 @@ class UserService {
       where: {
         id: user.id,
       },
-      data: {
-        ...user,
-        updatedAt: new Date(),
-      },
+      data: user,
     });
   }
 

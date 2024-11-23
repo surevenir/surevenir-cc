@@ -2,6 +2,7 @@ import express from "express";
 import MerchantController from "../controllers/merchantController";
 import authorizeAdmin from "../middlewares/authorizeAdmin";
 import authenticate from "../middlewares/authenticate";
+import multer from "../middlewares/multer";
 
 const merchantRouter = express.Router();
 
@@ -12,12 +13,14 @@ merchantRouter.post(
   "/",
   authenticate,
   authorizeAdmin,
+  multer.single("image"),
   MerchantController.createMerchant
 );
 merchantRouter.patch(
   "/:id",
   authenticate,
   authorizeAdmin,
+  multer.single("image"),
   MerchantController.updateMerchant
 );
 merchantRouter.delete(
