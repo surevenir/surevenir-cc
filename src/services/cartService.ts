@@ -28,17 +28,17 @@ class CartService {
       throw new ResponseError(404, "Product not found");
     }
 
-    return prisma.cart.create({
+    return await prisma.cart.create({
       data: cart,
     });
   }
 
   async getAllCarts() {
-    return prisma.cart.findMany();
+    return await prisma.cart.findMany();
   }
 
   async getCartById(id: number) {
-    const cart = prisma.cart.findUnique({
+    const cart = await prisma.cart.findUnique({
       where: {
         id,
       },
@@ -62,7 +62,7 @@ class CartService {
       throw new ResponseError(404, "Cart not found");
     }
 
-    const existingUser = await prisma.use.findFirst({
+    const existingUser = await prisma.user.findFirst({
       where: {
         id: cart.user_id,
       },
@@ -82,7 +82,7 @@ class CartService {
       throw new ResponseError(404, "Product not found");
     }
 
-    return prisma.cart.update({
+    return await prisma.cart.update({
       where: {
         id: cart.id,
       },
@@ -101,7 +101,7 @@ class CartService {
       throw new ResponseError(404, "Cart not found");
     }
 
-    return prisma.cart.delete({
+    return await prisma.cart.delete({
       where: {
         id,
       },

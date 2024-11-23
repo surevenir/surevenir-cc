@@ -4,17 +4,17 @@ import { Category } from "@prisma/client";
 
 class CategoryService {
   async createCategory(category: Category) {
-    return prisma.category.create({
+    return await prisma.category.create({
       data: category,
     });
   }
 
   async getAllCategories() {
-    return prisma.category.findMany();
+    return await prisma.category.findMany();
   }
 
   async getCategoryById(id: number) {
-    const category = prisma.category.findUnique({
+    const category = await prisma.category.findUnique({
       where: {
         id,
       },
@@ -38,7 +38,7 @@ class CategoryService {
       throw new ResponseError(404, "Category not found");
     }
 
-    return prisma.category.update({
+    return await prisma.category.update({
       where: {
         id: category.id,
       },
@@ -57,7 +57,7 @@ class CategoryService {
       throw new ResponseError(404, "Category not found");
     }
 
-    return prisma.category.delete({
+    return await prisma.category.delete({
       where: {
         id,
       },

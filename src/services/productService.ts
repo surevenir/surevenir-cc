@@ -23,7 +23,7 @@ class ProductService {
 
     await this.uploadAndSaveMediasIfExist(files, product.id);
 
-    return prisma.product.create({
+    return await prisma.product.create({
       data: product,
     });
   }
@@ -201,7 +201,7 @@ class ProductService {
 
     await this.uploadAndSaveMediasIfExist(files, product.id);
 
-    return prisma.product.update({
+    return await prisma.product.update({
       where: {
         id: product.id,
       },
@@ -220,7 +220,7 @@ class ProductService {
       throw new ResponseError(404, "Product not found");
     }
 
-    return prisma.product.delete({
+    return await prisma.product.delete({
       where: {
         id,
       },

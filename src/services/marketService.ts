@@ -5,18 +5,16 @@ import { Market } from "@prisma/client";
 class MarketService {
   async createMarket(market: Market) {
     return prisma.market.create({
-      data: {
-        ...market,
-      },
+      data: market,
     });
   }
 
   async getAllMarkets() {
-    return prisma.market.findMany();
+    return await prisma.market.findMany();
   }
 
   async getMarketById(id: number) {
-    const market = prisma.market.findUnique({
+    const market = await prisma.market.findUnique({
       where: {
         id,
       },
@@ -30,7 +28,7 @@ class MarketService {
   }
 
   async getMerchantsInMarket(id: number) {
-    return prisma.merchant.findMany({
+    return await prisma.merchant.findMany({
       where: {
         market_id: id,
       },
@@ -48,7 +46,7 @@ class MarketService {
       throw new ResponseError(404, "Market not found");
     }
 
-    return prisma.market.update({
+    return await prisma.market.update({
       where: {
         id: market.id,
       },
@@ -67,7 +65,7 @@ class MarketService {
       throw new ResponseError(404, "Market not found");
     }
 
-    return prisma.market.delete({
+    return await prisma.market.delete({
       where: {
         id,
       },

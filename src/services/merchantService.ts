@@ -40,7 +40,7 @@ class MerchantService {
       merchant.profile_image_url = mediaUrl;
     }
 
-    return prisma.merchant.create({
+    return await prisma.merchant.create({
       data: merchant,
     });
   }
@@ -50,7 +50,7 @@ class MerchantService {
   }
 
   async getMerchantById(id: number) {
-    const merchant = prisma.merchant.findUnique({
+    const merchant = await prisma.merchant.findUnique({
       where: {
         id,
       },
@@ -64,7 +64,7 @@ class MerchantService {
   }
 
   async getProductsInMerchant(id: number) {
-    return prisma.product.findMany({
+    return await prisma.product.findMany({
       where: {
         merchant_id: id,
       },
@@ -111,7 +111,7 @@ class MerchantService {
       merchant.profile_image_url = mediaUrl;
     }
 
-    return prisma.merchant.update({
+    return await prisma.merchant.update({
       where: {
         id: merchant.id,
       },
@@ -130,7 +130,7 @@ class MerchantService {
       throw new ResponseError(404, "Merchant not found");
     }
 
-    return prisma.merchant.delete({
+    return await prisma.merchant.delete({
       where: {
         id,
       },

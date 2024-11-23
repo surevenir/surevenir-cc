@@ -34,17 +34,17 @@ class UserService {
       user.profile_image_url = mediaUrl;
     }
 
-    return prisma.user.create({
+    return await prisma.user.create({
       data: user,
     });
   }
 
   async getAllUsers() {
-    return prisma.user.findMany();
+    return await prisma.user.findMany();
   }
 
   async getUserByEmail(email: string) {
-    const user = prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
         email,
       },
@@ -58,7 +58,7 @@ class UserService {
   }
 
   async getUsersAdmin() {
-    return prisma.user.findMany({
+    return await prisma.user.findMany({
       where: {
         role: "ADMIN",
       },
@@ -66,7 +66,7 @@ class UserService {
   }
 
   async getUserById(id: string) {
-    const user = prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
         id,
       },
@@ -95,7 +95,7 @@ class UserService {
       user.profile_image_url = mediaUrl;
     }
 
-    return prisma.user.update({
+    return await prisma.user.update({
       where: {
         id: user.id,
       },
@@ -114,7 +114,7 @@ class UserService {
       throw new ResponseError(404, "User not found");
     }
 
-    return prisma.user.delete({
+    return await prisma.user.delete({
       where: {
         id,
       },

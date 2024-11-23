@@ -28,17 +28,17 @@ class ReviewService {
       throw new ResponseError(404, "User not found");
     }
 
-    return prisma.review.create({
+    return await prisma.review.create({
       data: review,
     });
   }
 
   async getAllReviews() {
-    return prisma.review.findMany();
+    return await prisma.review.findMany();
   }
 
   async getReviewById(id: number) {
-    const review = prisma.review.findUnique({
+    const review = await prisma.review.findUnique({
       where: {
         id,
       },
@@ -86,7 +86,7 @@ class ReviewService {
       throw new ResponseError(404, "User not found");
     }
 
-    return prisma.review.update({
+    return await prisma.review.update({
       where: {
         id: review.id,
       },
@@ -105,7 +105,7 @@ class ReviewService {
       throw new ResponseError(404, "Review not found");
     }
 
-    return prisma.review.delete({
+    return await prisma.review.delete({
       where: {
         id,
       },
