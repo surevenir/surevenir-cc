@@ -1,9 +1,16 @@
 import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
 import { Review } from "@prisma/client";
+import MediaService, { MediaData, MediaType } from "./mediaService";
 
 class ReviewService {
-  async createReview(review: Review) {
+  private mediaService: MediaService;
+
+  constructor() {
+    this.mediaService = new MediaService();
+  } 
+
+  async createReview(review: Review, files: Express.Request["files"]) {
     const existingProduct = await prisma.product.findFirst({
       where: {
         id: review.product_id,
@@ -27,6 +34,8 @@ class ReviewService {
     if (!existingUser) {
       throw new ResponseError(404, "User not found");
     }
+
+    await this.uploadAndSaveMediasIfExist(files, review.id);
 
     return await prisma.review.create({
       data: review,
@@ -110,6 +119,25 @@ class ReviewService {
         id,
       },
     });
+  }
+
+  private async uploadAndSaveMediasIfExist(
+    files: Express.Request["files"],
+    productId: number
+  ) {
+    if (files && files.length != 0) {
+      const mediaUrls = await Promise.all(
+        (files as any).map((file: any) => this.mediaService.uploadMedia(file))
+      );
+
+      const mediaData: MediaData[] = mediaUrls.map((mediaUrl) => ({
+        url: mediaUrl,
+        itemId: productId,
+        type: MediaType.REVIEW,
+      }));
+
+      await this.mediaService.saveMedias(mediaData);
+    }
   }
 }
 

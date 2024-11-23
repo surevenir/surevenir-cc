@@ -21,6 +21,12 @@ class MarketController {
     createResponse(res, 201, "Market created successfully", market);
   }
 
+  async addMarketImages(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const market = await this.marketService.addMarketImages(parseInt(id), req.files);
+    createResponse(res, 200, "Market images added successfully", market);
+  }
+
   async getAllMarkets(req: Request, res: Response, next: NextFunction) {
     const markets = await this.marketService.getAllMarkets();
     createResponse(res, 200, "Markets retrieved successfully", markets);

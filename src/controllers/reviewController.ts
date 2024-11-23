@@ -17,7 +17,7 @@ class ReviewController {
 
   async createReview(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateReviewRequest.parse(req.body);
-    const review = await this.reviewService.createReview(data);
+    const review = await this.reviewService.createReview(data, req.files);
     createResponse(res, 201, "Review created successfully", review);
   }
 

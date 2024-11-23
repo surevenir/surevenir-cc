@@ -1,6 +1,6 @@
 import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
-import { Merchant } from "@prisma/client";
+import { Merchant, Prisma } from "@prisma/client";
 import MediaService from "./mediaService";
 
 class MerchantService {
@@ -46,7 +46,25 @@ class MerchantService {
   }
 
   async getAllMerchants() {
-    const merchant = await prisma.merchant.findMany();
+    let merchants = await prisma.merchant.findMany(
+      {
+        include: {
+          products: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      }
+    );
+
+    merchants = merchants.map((merchant: any) => {
+      merchant.products_count = merchant.products.length;
+      delete merchant.products;
+      return merchant;
+    });
+
+    return merchants;
   }
 
   async getMerchantById(id: number) {
