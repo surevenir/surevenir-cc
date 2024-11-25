@@ -1,10 +1,11 @@
 {
+  "success": true,
+  "status_code": 200,
+  "message": "Data statistics retrieved successfully",
   "data": [
-    {
-      "name": "Tes 3"
-    },
-    {
-      "name": "Tes 3"
-    }
+    { "users": 3000 },
+    { "markets": 3000 },
+    { "merchant": 3000 },
+    { "products": 3000 }
   ]
 }
