@@ -38,13 +38,15 @@ model User {
 }
 
 model Market {
-  id          Int      @id @unique @default(autoincrement())
-  name        String
-  description String?
-  longitude   String?
-  latitude    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
+  id                Int      @id @unique @default(autoincrement())
+  slug              String   @default(uuid())
+  name              String
+  description       String?
+  profile_image_url String?
+  longitude         String?
+  latitude          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
 
   merchants Merchant[]
 
@@ -53,28 +55,32 @@ model Market {
 
 model Merchant {
   id                Int      @id @unique @default(autoincrement())
+  slug              String   @default(uuid())
   name              String
   profile_image_url String?
   description       String?
+  addresses         String?
   longitude         String?
   latitude          String?
   user_id           String   @unique
-  market_id         Int
+  market_id         Int?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @default(now())
 
-  user     User      @relation(fields: [user_id], references: [id])
-  market   Market    @relation(fields: [market_id], references: [id])
+  user     User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  market   Market?   @relation(fields: [market_id], references: [id], onDelete: SetNull)
   products Product[]
 
   @@map("merchants")
 }
 
 model Category {
-  id        Int      @id @unique @default(autoincrement())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  id          Int      @id @unique @default(autoincrement())
+  name        String   @unique
+  description String
+  range_price String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
 
   product_categories ProductCategory[]
 
@@ -96,10 +102,12 @@ model ProductCategory {
 
 model Product {
   id          Int      @id @unique @default(autoincrement())
+  slug        String   @default(uuid())
   name        String
   description String?
   price       Float
   merchant_id Int
+  stock       Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
 
@@ -129,48 +137,48 @@ model Review {
 
 model Cart {
   id          Int      @id @unique @default(autoincrement())
+  slug        String   @default(uuid())
   user_id     String
   product_id  Int
   quantity    Int
   total_price Float
   is_checkout Boolean? @default(false)
-  // checkout_id Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
 
   user    User    @relation(fields: [user_id], references: [id])
   product Product @relation(fields: [product_id], references: [id])
-  // checkout Checkout? @relation(fields: [checkout_id], references: [id])
 
   @@map("carts")
 }
 
 model Checkout {
   id          Int      @id @unique @default(autoincrement())
+  slug        String   @default(uuid())
   user_id     String
   total_price Float
-  // merchant_id Int
+  status      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
 
   user             User              @relation(fields: [user_id], references: [id])
   checkout_details CheckoutDetails[]
-  // carts Cart[]
 
   @@map("checkouts")
 }
 
 model CheckoutDetails {
-  id          Int      @id @unique @default(autoincrement())
-  checkout_id Int
-  product_id  Int
-  total_price Float
-  // cart_id     Int?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
+  id               Int      @id @unique @default(autoincrement())
+  checkout_id      Int
+  product_id       Int?
+  product_identity String?  @db.Text
+  product_quantity Int
+  product_price    Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
 
   checkout Checkout @relation(fields: [checkout_id], references: [id])
-  product  Product  @relation(fields: [product_id], references: [id])
+  product  Product? @relation(fields: [product_id], references: [id], onDelete: SetNull)
 
   @@map("checkout_details")
 }
@@ -187,11 +195,13 @@ model Images {
 }
 
 model History {
-  id        Int      @id @unique @default(autoincrement())
-  predict   String
-  image_url String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  id         Int      @id @unique @default(autoincrement())
+  slug       String   @default(uuid())
+  predict    String
+  accuration Float
+  image_url  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
 
   @@map("histories")
 }

@@ -41,7 +41,9 @@ class MarketService {
       type: MediaType.MARKET,
     }));
 
-    return await this.mediaService.saveMedias(mediaData);
+    await this.mediaService.saveMedias(mediaData);
+
+    return mediaData;
   }
 
   async getAllMarkets() {
@@ -59,7 +61,17 @@ class MarketService {
       throw new ResponseError(404, "Market not found");
     }
 
-    return market;
+    const images = await prisma.images.findMany({
+      where: {
+        item_id: id,
+        type: MediaType.MARKET,
+      },
+    });
+
+    return {
+      ...market,
+      images,
+    };
   }
 
   async getMerchantsInMarket(id: number) {
