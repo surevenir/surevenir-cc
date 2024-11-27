@@ -23,9 +23,9 @@ class UserController {
     createResponse(res, 200, "Users retrieved successfully", users);
   }
 
-  async getUserAdmin(req: Request, res: Response, next: NextFunction) {
-    const users = await this.userService.getUsersAdmin();
-    createResponse(res, 200, "Admin users retrieved successfully", users);
+  async getUser(req: Request, res: Response, next: NextFunction) {
+    const user = await this.userService.getUserById(req.params.id);
+    createResponse(res, 200, "User retrieved successfully", user);
   }
 
   async updateUser(req: Request, res: Response, next: NextFunction) {

@@ -8,10 +8,9 @@ const userRouter = express.Router();
 
 userRouter.get("/", authenticate, UserController.getAllUsers);
 userRouter.get(
-  "/admin",
+  "/:id",
   authenticate,
-  authorizeAdmin,
-  UserController.getUserAdmin
+  UserController.getUser
 );
 userRouter.post(
   "/",

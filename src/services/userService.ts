@@ -34,6 +34,8 @@ class UserService {
       user.profile_image_url = mediaUrl;
     }
 
+    user.password = user.password === "" ? null : user.password;
+
     return await prisma.user.create({
       data: user,
     });

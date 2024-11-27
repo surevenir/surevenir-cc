@@ -17,7 +17,13 @@ class MerchantController {
 
   async createMerchant(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateMerchantRequest.parse(req.body);
-    const merchant = await this.merchantService.createMerchant(data, req.file);
+    const merchant = await this.merchantService.createMerchant(
+      {
+        ...data,
+        market_id: parseInt(data.market_id),
+      },
+      req.file
+    );
     createResponse(res, 201, "Merchant created successfully", merchant);
   }
 
@@ -37,16 +43,25 @@ class MerchantController {
     const products = await this.merchantService.getProductsInMerchant(
       parseInt(id)
     );
-    createResponse(res, 200, "Products in merchant retrieved successfully", products);
+    createResponse(
+      res,
+      200,
+      "Products in merchant retrieved successfully",
+      products
+    );
   }
 
   async updateMerchant(req: Request, res: Response, next: NextFunction) {
     let { id } = req.params;
     const data: any = UpdateMerchantRequest.parse(req.body);
-    const merchant = await this.merchantService.updateMerchant({
-      id: parseInt(id),
-      ...data,
-    }, req.file);
+    const merchant = await this.merchantService.updateMerchant(
+      {
+        id: parseInt(id),
+        ...data,
+        market_id: parseInt(data.market_id),
+      },
+      req.file
+    );
     createResponse(res, 200, "Merchant updated successfully", merchant);
   }
 
