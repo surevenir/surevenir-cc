@@ -1,7 +1,7 @@
 import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
 import { Merchant, Prisma } from "@prisma/client";
-import MediaService from "./mediaService";
+import MediaService, { MediaType } from "./mediaService";
 
 class MerchantService {
   private mediaService: MediaService;
@@ -17,7 +17,6 @@ class MerchantService {
       },
     });
 
-    
     if (!existingUser) {
       throw new ResponseError(404, "User not found");
     }
@@ -43,17 +42,15 @@ class MerchantService {
   }
 
   async getAllMerchants() {
-    let merchants = await prisma.merchant.findMany(
-      {
-        include: {
-          products: {
-            select: {
-              id: true,
-            },
+    let merchants = await prisma.merchant.findMany({
+      include: {
+        products: {
+          select: {
+            id: true,
           },
         },
-      }
-    );
+      },
+    });
 
     merchants = merchants.map((merchant: any) => {
       merchant.products_count = merchant.products.length;
@@ -79,11 +76,39 @@ class MerchantService {
   }
 
   async getProductsInMerchant(id: number) {
-    return await prisma.product.findMany({
+    let products = await prisma.product.findMany({
       where: {
         merchant_id: id,
       },
+      include: {
+        product_categories: {
+          select: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
+
+    const imagesUrl = await prisma.images.findMany({
+      where: {
+        item_id: {
+          in: products.map((product) => product.id),
+        },
+        type: MediaType.PRODUCT,
+      },
+    });
+
+    products = products.map((product) => ({
+      ...product,
+      images: imagesUrl.filter((image) => image.item_id === product.id),
+    }));
+
+    return products;
   }
 
   async updateMerchant(merchant: Merchant, file: Express.Request["file"]) {

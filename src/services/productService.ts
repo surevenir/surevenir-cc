@@ -10,7 +10,11 @@ class ProductService {
     this.mediaService = new MediaService();
   }
 
-  async createProduct(product: Product, files: Express.Request["files"]) {
+  async createProduct(
+    product: Product,
+    categoryIds: number[],
+    files: Express.Request["files"]
+  ) {
     const existingMerchant = await prisma.merchant.findFirst({
       where: {
         id: product.merchant_id,
@@ -21,11 +25,35 @@ class ProductService {
       throw new ResponseError(404, "Merchant not found");
     }
 
-    await this.uploadAndSaveMediasIfExist(files, product.id);
-
-    return await prisma.product.create({
+    const createdProduct = await prisma.product.create({
       data: product,
     });
+
+    await prisma.productCategory.createMany({
+      data: categoryIds.map((category_id) => ({
+        product_id: createdProduct.id,
+        category_id,
+      })),
+    });
+
+    const categories = await prisma.category.findMany({
+      where: {
+        id: {
+          in: categoryIds,
+        },
+      },
+    });
+
+    const images = await this.uploadAndSaveMediasIfExist(
+      files,
+      createdProduct.id
+    );
+
+    return {
+      ...createdProduct,
+      categories,
+      images,
+    };
   }
 
   async getProductById(id: number) {
@@ -72,7 +100,7 @@ class ProductService {
 
     return {
       ...product,
-      images: imagesUrl.map((image) => image.url),
+      images: imagesUrl,
     };
   }
 
@@ -141,9 +169,7 @@ class ProductService {
 
     products = products.map((product) => ({
       ...product,
-      images: imagesUrl
-        .filter((image) => image.item_id === product.id)
-        .map((image) => image.url),
+      images: imagesUrl.filter((image) => image.item_id === product.id),
     }));
 
     return products;
@@ -178,7 +204,11 @@ class ProductService {
     return reviews;
   }
 
-  async updateProduct(product: Product, files: Express.Request["files"]) {
+  async updateProduct(
+    product: Product,
+    categoryIds: number[],
+    files: Express.Request["files"]
+  ) {
     const existingProduct = await prisma.product.findFirst({
       where: {
         id: product.id,
@@ -201,12 +231,48 @@ class ProductService {
 
     await this.uploadAndSaveMediasIfExist(files, product.id);
 
-    return await prisma.product.update({
+    const updatedProduct = await prisma.product.update({
       where: {
         id: product.id,
       },
       data: product,
     });
+
+    if (categoryIds.length > 0) {
+      await prisma.productCategory.deleteMany({
+        where: {
+          product_id: product.id,
+        },
+      });
+
+      await prisma.productCategory.createMany({
+        data: categoryIds.map((category_id) => ({
+          product_id: product.id,
+          category_id,
+        })),
+      });
+    }
+
+    const categories = await prisma.category.findMany({
+      where: {
+        id: {
+          in: categoryIds,
+        },
+      },
+    });
+
+    const images = await prisma.images.findMany({
+      where: {
+        item_id: product.id,
+        type: MediaType.PRODUCT,
+      },
+    });
+
+    return {
+      ...updatedProduct,
+      categories,
+      images,
+    };
   }
 
   async deleteProductById(id: number) {
@@ -243,6 +309,8 @@ class ProductService {
       }));
 
       await this.mediaService.saveMedias(mediaData);
+
+      return mediaData;
     }
   }
 }

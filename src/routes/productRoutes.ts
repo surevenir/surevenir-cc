@@ -24,7 +24,6 @@ productRouter.patch(
   "/:id",
   authenticate,
   authorizeAdmin,
-  multer.array("images", 10),
   ProductController.updateProduct
 );
 productRouter.delete(

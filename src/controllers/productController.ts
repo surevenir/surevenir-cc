@@ -6,21 +6,29 @@ import {
 } from "../types/request/product";
 import Controller from "../utils/controllerDecorator";
 import ProductService from "../services/productService";
-import MerchantService from "../services/merchantService";
 
 @Controller
 class ProductController {
   private productService: ProductService;
-  private merchantService: MerchantService;
 
   constructor() {
     this.productService = new ProductService();
-    this.merchantService = new MerchantService();
   }
 
   async createProduct(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateProductRequest.parse(req.body);
-    const product = await this.productService.createProduct(data, req.files);
+    const categoryIds = data.category_ids.split(",").map((id: string) => parseInt(id));
+    delete data.category_ids;
+
+    const product = await this.productService.createProduct(
+      {
+        ...data,
+        merchant_id: parseInt(data.merchant_id),
+        price: parseFloat(data.price),
+      },
+      categoryIds,
+      req.files
+    );
     createResponse(res, 201, "Product created successfully", product);
   }
 
@@ -43,21 +51,22 @@ class ProductController {
 
   async getProductReviews(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const product = await this.productService.getProductReviews(
-      parseInt(id)
-    );
-    createResponse(res, 200, "Product retrieved successfully", product);
+    const product = await this.productService.getProductReviews(parseInt(id));
+    createResponse(res, 200, "Product reviews retrieved successfully", product);
   }
 
   async updateProduct(req: Request, res: Response, next: NextFunction) {
     let { id } = req.params;
     const data: any = UpdateProductRequest.parse(req.body);
+    const categoryIds = data.category_ids;
+    delete data.category_ids;
 
     const product = await this.productService.updateProduct(
       {
         id: parseInt(id),
         ...data,
       },
+      categoryIds,
       req.files
     );
 
