@@ -15,7 +15,7 @@ datasource db {
 
 model User {
   id                String   @id @unique
-  full_name         String
+  full_name         String?
   username          String   @unique
   email             String   @unique
   password          String?
@@ -52,16 +52,16 @@ model Market {
 }
 
 model Merchant {
-  id          Int      @id @unique @default(autoincrement())
-  name        String
+  id                Int      @id @unique @default(autoincrement())
+  name              String
   profile_image_url String?
-  description String?
-  longitude   String?
-  latitude    String?
-  user_id     String   @unique
-  market_id   Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
+  description       String?
+  longitude         String?
+  latitude          String?
+  user_id           String   @unique
+  market_id         Int
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
 
   user     User      @relation(fields: [user_id], references: [id])
   market   Market    @relation(fields: [market_id], references: [id])
