@@ -1,6 +1,8 @@
 import prisma from "../config/database";
+import { ImageType } from "../types/enum/dbEnum";
 import ResponseError from "../utils/responseError";
 import { User } from "@prisma/client";
+import { MediaType } from "./mediaService";
 
 class CartService {
   async addproductToCart(user: User, productId: number, quantity: number) {
@@ -76,14 +78,23 @@ class CartService {
       throw new ResponseError(404, "Cart not found");
     }
 
-    await prisma.cart.update({
-      where: {
-        id: cartId,
-      },
-      data: {
-        quantity: quantity,
-      },
-    });
+    // if quantity is 0, delete cart
+    if (quantity === 0) {
+      await prisma.cart.delete({
+        where: {
+          id: cartId,
+        },
+      });
+    } else {
+      await prisma.cart.update({
+        where: {
+          id: cartId,
+        },
+        data: {
+          quantity: quantity,
+        },
+      });
+    }
 
     const cartWithProducts = await prisma.cart.findMany({
       where: {
@@ -106,17 +117,33 @@ class CartService {
   }
 
   async getProductsInCart(user: User) {
-    const cartWithProducts = await prisma.cart.findMany({
+    const cartWithProducts: any = await prisma.cart.findMany({
       where: {
         user_id: user.id,
       },
       include: {
-        product: true,
+        product: {
+          include: {
+            merchant: true,
+          },
+        },
       },
     });
 
+    // get images for each product
+    for (const cart of cartWithProducts) {
+      const images = await prisma.images.findMany({
+        where: {
+          item_id: cart.product_id,
+          type: MediaType.PRODUCT,
+        },
+      });
+
+      cart.product.images = images.map((image) => image.url);
+    }
+
     // calculate product total price and total price
-    const totalPrice = cartWithProducts.reduce((acc, cart) => {
+    const totalPrice = cartWithProducts.reduce((acc: any, cart: any) => {
       return acc + cart.product.price * cart.quantity;
     }, 0);
 

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import createResponse from "../utils/createResponse";
-import { AddProductsToCart } from "../types/request/cart";
+import { AddProductsToCart, UpdateProductInCart } from "../types/request/cart";
 import Controller from "../utils/controllerDecorator";
 import CartService from "../services/cartService";
 
@@ -23,10 +23,11 @@ class CartController {
   }
 
   async updateProductInCart(req: Request, res: Response, next: NextFunction) {
-    const data = AddProductsToCart.parse(req.body);
+    const id = req.params.id;
+    const data = UpdateProductInCart.parse(req.body);
     const result = await this.cartService.updateProductInCart(
       req.user!,
-      data.product_id,
+      parseInt(id),
       data.quantity
     );
     createResponse(res, 200, "Product updated in cart", result);

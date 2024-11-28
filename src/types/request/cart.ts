@@ -6,7 +6,6 @@ const AddProductsToCart = z.object({
 });
 
 const UpdateProductInCart = z.object({
-  product_id: z.number(),
   quantity: z.number(),
 });
 
