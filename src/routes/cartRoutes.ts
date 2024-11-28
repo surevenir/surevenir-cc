@@ -4,10 +4,7 @@ import authenticate from "../middlewares/authenticate";
 
 const cartRouter = express.Router();
 
-cartRouter.get("/", authenticate, CartController.getAllCarts);
-cartRouter.get("/:id", authenticate, CartController.getCartById);
-cartRouter.post("/", authenticate, CartController.createCart);
-cartRouter.patch("/:id", authenticate, CartController.updateCart);
-cartRouter.delete("/:id", authenticate, CartController.deleteCart);
+cartRouter.post("/", authenticate, CartController.addproductToCart);
+
 
 export default cartRouter;

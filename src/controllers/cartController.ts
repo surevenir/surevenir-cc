@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import createResponse from "../utils/createResponse";
-import { CreateCartRequest, UpdateCartRequest } from "../types/request/cart";
+import { AddProductsToCart } from "../types/request/cart";
 import Controller from "../utils/controllerDecorator";
 import CartService from "../services/cartService";
 
@@ -12,37 +12,48 @@ class CartController {
     this.cartService = new CartService();
   }
 
-  async createCart(req: Request, res: Response, next: NextFunction) {
-    const data: any = CreateCartRequest.parse(req.body);
-    const cart = await this.cartService.createCart(data);
-    createResponse(res, 201, "Cart created successfully", cart);
+  async addproductToCart(req: Request, res: Response, next: NextFunction) {
+    const data = AddProductsToCart.parse(req.body);
+    const result = await this.cartService.addproductToCart(
+      req.user!,
+      data.product_id,
+      data.quantity
+    );
+    createResponse(res, 200, "Product added to cart", result);
   }
 
-  async getAllCarts(req: Request, res: Response, next: NextFunction) {
-    const carts = await this.cartService.getAllCarts();
-    createResponse(res, 200, "Carts retrieved successfully", carts);
+  async updateProductInCart(req: Request, res: Response, next: NextFunction) {
+    const data = AddProductsToCart.parse(req.body);
+    const result = await this.cartService.updateProductInCart(
+      req.user!,
+      data.product_id,
+      data.quantity
+    );
+    createResponse(res, 200, "Product updated in cart", result);
   }
 
-  async getCartById(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
-    const cart = await this.cartService.getCartById(parseInt(id));
-    createResponse(res, 200, "Cart retrieved successfully", cart);
+  async getProductsInCart(req: Request, res: Response, next: NextFunction) {
+    const result = await this.cartService.getProductsInCart(req.user!);
+    createResponse(res, 200, "Cart fetched", result);
   }
 
-  async updateCart(req: Request, res: Response, next: NextFunction) {
-    let { id } = req.params;
-    const data: any = UpdateCartRequest.parse(req.body);
-    const cart = await this.cartService.updateCart({
-      id: parseInt(id),
-      ...data,
-    });
-    createResponse(res, 200, "Cart updated successfully", cart);
+  async deleteCartItem(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const cartId = parseInt(req.params.id);
+    const result = await this.cartService.deleteCartItem(req.user!, cartId);
+    createResponse(res, 200, "Product deleted from cart", result);
   }
 
-  async deleteCart(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
-    await this.cartService.deleteCartById(parseInt(id));
-    createResponse(res, 200, "Cart deleted successfully", { id });
+  async deleteAllProductsInCart(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const result = await this.cartService.deleteAllProductsInCart(req.user!);
+    createResponse(res, 200, "All products deleted from cart", result);
   }
 }
 

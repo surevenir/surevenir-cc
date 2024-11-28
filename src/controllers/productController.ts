@@ -25,6 +25,7 @@ class ProductController {
         ...data,
         merchant_id: parseInt(data.merchant_id),
         price: parseFloat(data.price),
+        stock: parseInt(data.stock),
       },
       categoryIds,
       req.files
