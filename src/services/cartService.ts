@@ -1,60 +1,76 @@
 import prisma from "../config/database";
+import { ImageType } from "../types/enum/dbEnum";
 import ResponseError from "../utils/responseError";
-import { Cart } from "@prisma/client";
+import { User } from "@prisma/client";
+import { MediaType } from "./mediaService";
 
 class CartService {
-  async createCart(cart: Cart) {
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        id: cart.user_id,
-      },
-    });
-
+  async addproductToCart(user: User, productId: number, quantity: number) {
     const existingProduct = await prisma.product.findFirst({
       where: {
-        id: cart.product_id,
+        id: productId,
       },
     });
-
-    if (!existingUser && !existingProduct) {
-      throw new ResponseError(404, "User and product not found");
-    }
-
-    if (!existingUser) {
-      throw new ResponseError(404, "User not found");
-    }
 
     if (!existingProduct) {
       throw new ResponseError(404, "Product not found");
     }
 
-    return await prisma.cart.create({
-      data: cart,
-    });
-  }
+    // check if product already in cart
+    // if yes, update the quantity
+    // if no, add product to cart
 
-  async getAllCarts() {
-    return await prisma.cart.findMany();
-  }
-
-  async getCartById(id: number) {
-    const cart = await prisma.cart.findUnique({
+    const existingCart = await prisma.cart.findFirst({
       where: {
-        id,
+        user_id: user.id,
+        product_id: productId,
       },
     });
 
-    if (!cart) {
-      throw new ResponseError(404, "Cart not found");
+    if (existingCart) {
+      await prisma.cart.update({
+        where: {
+          id: existingCart.id,
+        },
+        data: {
+          quantity: existingCart.quantity + quantity,
+        },
+      });
+    } else {
+      await prisma.cart.create({
+        data: {
+          quantity: quantity,
+          user_id: user.id,
+          product_id: productId,
+        },
+      });
     }
 
-    return cart;
+    const cartWithProducts = await prisma.cart.findMany({
+      where: {
+        user_id: user.id,
+      },
+      include: {
+        product: true,
+      },
+    });
+
+    // calculate product total price and total price
+    const totalPrice = cartWithProducts.reduce((acc, cart) => {
+      return acc + cart.product.price * cart.quantity;
+    }, 0);
+
+    return {
+      cart: cartWithProducts,
+      total_price: totalPrice,
+    };
   }
 
-  async updateCart(cart: Cart) {
+  async updateProductInCart(user: User, cartId: number, quantity: number) {
     const existingCart = await prisma.cart.findFirst({
       where: {
-        id: cart.id,
+        id: cartId,
+        user_id: user.id,
       },
     });
 
@@ -62,50 +78,130 @@ class CartService {
       throw new ResponseError(404, "Cart not found");
     }
 
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        id: cart.user_id,
-      },
-    });
-
-    const existingProduct = await prisma.product.findFirst({
-      where: {
-        id: cart.product_id,
-      },
-    });
-
-    if (!existingUser) {
-      throw new ResponseError(404, "User not found");
+    // if quantity is 0, delete cart
+    if (quantity === 0) {
+      await prisma.cart.delete({
+        where: {
+          id: cartId,
+        },
+      });
+    } else {
+      await prisma.cart.update({
+        where: {
+          id: cartId,
+        },
+        data: {
+          quantity: quantity,
+        },
+      });
     }
 
-    if (!existingProduct) {
-      throw new ResponseError(404, "Product not found");
-    }
-
-    return await prisma.cart.update({
+    const cartWithProducts = await prisma.cart.findMany({
       where: {
-        id: cart.id,
+        user_id: user.id,
       },
-      data: cart,
+      include: {
+        product: true,
+      },
     });
+
+    // calculate product total price and total price
+    const totalPrice = cartWithProducts.reduce((acc, cart) => {
+      return acc + cart.product.price * cart.quantity;
+    }, 0);
+
+    return {
+      cart: cartWithProducts,
+      total_price: totalPrice,
+    };
   }
 
-  async deleteCartById(id: number) {
+  async getProductsInCart(user: User) {
+    const cartWithProducts: any = await prisma.cart.findMany({
+      where: {
+        user_id: user.id,
+      },
+      include: {
+        product: {
+          include: {
+            merchant: true,
+          },
+        },
+      },
+    });
+
+    // get images for each product
+    for (const cart of cartWithProducts) {
+      const images = await prisma.images.findMany({
+        where: {
+          item_id: cart.product_id,
+          type: MediaType.PRODUCT,
+        },
+      });
+
+      cart.product.images = images.map((image) => image.url);
+    }
+
+    // calculate product total price and total price
+    const totalPrice = cartWithProducts.reduce((acc: any, cart: any) => {
+      return acc + cart.product.price * cart.quantity;
+    }, 0);
+
+    return {
+      cart: cartWithProducts,
+      total_price: totalPrice,
+    };
+  }
+
+  async deleteCartItem(user: User, cartId: number) {
     const existingCart = await prisma.cart.findFirst({
       where: {
-        id,
+        id: cartId,
+        user_id: user.id,
       },
     });
 
     if (!existingCart) {
-      throw new ResponseError(404, "Cart not found");
+      throw new ResponseError(404, "Target not found");
     }
 
-    return await prisma.cart.delete({
+    await prisma.cart.delete({
       where: {
-        id,
+        id: cartId,
       },
     });
+
+    const cartWithProducts = await prisma.cart.findMany({
+      where: {
+        user_id: user.id,
+      },
+      include: {
+        product: true,
+      },
+    });
+
+    // calculate product total price and total price
+    const totalPrice = cartWithProducts.reduce((acc, cart) => {
+      return acc + cart.product.price * cart.quantity;
+    }, 0);
+
+    return {
+      cart: cartWithProducts,
+      total_price: totalPrice,
+    };
+  }
+
+  async deleteAllProductsInCart(user: User) {
+    await prisma.cart.deleteMany({
+      where: {
+        user_id: user.id,
+      },
+    });
+
+    return {
+      cart: [],
+      total_price: 0,
+    };
   }
 }
 

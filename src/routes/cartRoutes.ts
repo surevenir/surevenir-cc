@@ -4,10 +4,10 @@ import authenticate from "../middlewares/authenticate";
 
 const cartRouter = express.Router();
 
-cartRouter.get("/", authenticate, CartController.getAllCarts);
-cartRouter.get("/:id", authenticate, CartController.getCartById);
-cartRouter.post("/", authenticate, CartController.createCart);
-cartRouter.patch("/:id", authenticate, CartController.updateCart);
-cartRouter.delete("/:id", authenticate, CartController.deleteCart);
+cartRouter.post("/", authenticate, CartController.addproductToCart);
+cartRouter.get("/", authenticate, CartController.getProductsInCart);
+cartRouter.patch("/:id", authenticate, CartController.updateProductInCart);
+cartRouter.delete("/:id", authenticate, CartController.deleteCartItem);
+cartRouter.delete("/", authenticate, CartController.deleteAllProductsInCart);
 
 export default cartRouter;

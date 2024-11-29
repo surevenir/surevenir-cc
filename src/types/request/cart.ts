@@ -1,19 +1,12 @@
 import { z } from "zod";
 
-const CreateCartRequest = z.object({
-  user_id: z.string(),
+const AddProductsToCart = z.object({
   product_id: z.number(),
-  quantity: z.number().min(0),
-  is_checkout: z.boolean().default(false),
-  total_price: z.number(),
+  quantity: z.number(),
 });
 
-const UpdateCartRequest = z.object({
-  user_id: z.string().optional(),
-  product_id: z.number().optional(),
-  quantity: z.number().min(0).optional(),
-  is_checkout: z.boolean().default(false).optional(),
-  total_price: z.number().optional(),
+const UpdateProductInCart = z.object({
+  quantity: z.number(),
 });
 
-export { CreateCartRequest, UpdateCartRequest };
+export { AddProductsToCart, UpdateProductInCart };

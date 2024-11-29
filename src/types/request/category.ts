@@ -8,6 +8,8 @@ const CreateCategoryRequest = z.object({
 
 const UpdateCategoryRequest = z.object({
   name: z.string().min(3).optional(),
+  description: z.string().optional(),
+  range_price: z.string().optional(),
 });
 
 export { CreateCategoryRequest, UpdateCategoryRequest };

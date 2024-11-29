@@ -5,7 +5,7 @@ enum Role {
 }
 
 enum ImageType {
-  PRODUC = "PRODUCT",
+  PRODUCT = "PRODUCT",
   MARKET = "MARKET",
   REVIEW = "REVIEW",
 }

@@ -141,8 +141,6 @@ model Cart {
   user_id     String
   product_id  Int
   quantity    Int
-  total_price Float
-  is_checkout Boolean? @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
 
