@@ -10,8 +10,13 @@ class MarketService {
     this.mediaService = new MediaService();
   }
 
-  async createMarket(market: Market) {
-    return prisma.market.create({
+  async createMarket(market: Market, file: Express.Request["file"]) {
+    if (file) {
+      const mediaUrl = await this.mediaService.uploadMedia(file);
+      market.profile_image_url = mediaUrl;
+    }
+
+    return await prisma.market.create({
       data: market,
     });
   }
@@ -47,7 +52,23 @@ class MarketService {
   }
 
   async getAllMarkets() {
-    return await prisma.market.findMany();
+    const markets = await prisma.market.findMany();
+
+    const images = await prisma.images.findMany({
+      where: {
+        type: "market",
+        item_id: {
+          in: markets.map((market) => market.id),
+        },
+      },
+    });
+
+    const marketsWithImages = markets.map((market) => ({
+      ...market,
+      images: images.filter((image) => image.item_id === market.id),
+    }));
+
+    return marketsWithImages;
   }
 
   async getMarketById(id: number) {

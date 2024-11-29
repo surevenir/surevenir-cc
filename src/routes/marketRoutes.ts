@@ -24,6 +24,7 @@ marketRouter.post(
   "/",
   authenticate,
   authorizeAdmin,
+  multer.single("image"),
   MarketController.createMarket
 );
 marketRouter.patch(

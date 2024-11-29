@@ -17,7 +17,12 @@ class MarketController {
 
   async createMarket(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateMarketRequest.parse(req.body);
-    const market = await this.marketService.createMarket(data);
+    const market = await this.marketService.createMarket(
+      {
+        ...data,
+      },
+      req.file
+    );
     createResponse(res, 201, "Market created successfully", market);
   }
 

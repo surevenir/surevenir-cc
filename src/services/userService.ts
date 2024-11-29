@@ -35,6 +35,7 @@ class UserService {
     }
 
     user.password = user.password === "" ? null : user.password;
+    user.role = user.role === null ? "USER" : user.role;
 
     return await prisma.user.create({
       data: user,

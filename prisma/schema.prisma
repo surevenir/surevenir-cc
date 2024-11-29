@@ -20,7 +20,7 @@ model User {
   email             String   @unique
   password          String?
   phone             String?  @unique
-  role              String   @default("USER")
+  role              String?  @default("USER")
   provider          String   @default("EMAIL")
   longitude         String?
   latitude          String?
@@ -136,13 +136,13 @@ model Review {
 }
 
 model Cart {
-  id          Int      @id @unique @default(autoincrement())
-  slug        String   @default(uuid())
-  user_id     String
-  product_id  Int
-  quantity    Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
+  id         Int      @id @unique @default(autoincrement())
+  slug       String   @default(uuid())
+  user_id    String
+  product_id Int
+  quantity   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
 
   user    User    @relation(fields: [user_id], references: [id])
   product Product @relation(fields: [product_id], references: [id])

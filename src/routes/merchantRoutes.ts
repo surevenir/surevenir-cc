@@ -8,7 +8,11 @@ const merchantRouter = express.Router();
 
 merchantRouter.get("/", authenticate, MerchantController.getAllMerchants);
 merchantRouter.get("/:id", authenticate, MerchantController.getMerchantById);
-merchantRouter.get("/:id/products", authenticate, MerchantController.getProductsInMerchant);
+merchantRouter.get(
+  "/:id/products",
+  authenticate,
+  MerchantController.getProductsInMerchant
+);
 merchantRouter.post(
   "/",
   authenticate,
