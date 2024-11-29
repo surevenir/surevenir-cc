@@ -19,7 +19,10 @@ const CreateUserRequest = z.object({
   full_name: z.string().min(3, "Fullname harus memiliki minimal 3 karakter."),
   username: z.string().min(3, "Username harus memiliki minimal 3 karakter."),
   email: z.string().email("Format email tidak valid."),
-  password: z.string().min(3, "Password harus memiliki minimal 3 karakter."),
+  password: z
+    .string()
+    .min(3, "Password harus memiliki minimal 3 karakter.")
+    .nullable(),
 });
 
 const UpdateUserRequest = z.object({

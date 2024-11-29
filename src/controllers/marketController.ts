@@ -23,7 +23,10 @@ class MarketController {
 
   async addMarketImages(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const market = await this.marketService.addMarketImages(parseInt(id), req.files);
+    const market = await this.marketService.addMarketImages(
+      parseInt(id),
+      req.files
+    );
     createResponse(res, 200, "Market images added successfully", market);
   }
 
@@ -40,8 +43,15 @@ class MarketController {
 
   async getMerchantsInMarket(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const merchants = await this.marketService.getMerchantsInMarket(parseInt(id));
-    createResponse(res, 200, "Merchants in market retrieved successfully", merchants);
+    const merchants = await this.marketService.getMerchantsInMarket(
+      parseInt(id)
+    );
+    createResponse(
+      res,
+      200,
+      "Merchants in market retrieved successfully",
+      merchants
+    );
   }
 
   async updateMarket(req: Request, res: Response, next: NextFunction) {
