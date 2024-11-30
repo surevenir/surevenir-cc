@@ -15,18 +15,17 @@ export type MediaData = {
   type: MediaType;
 };
 
+const storage = new Storage({
+  projectId: process.env.GOOGLE_PROJECT_ID,
+  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+});
+const bucket = storage.bucket(process.env.GOOGLE_STORAGE_BUCKET as string);
+
 class MediaService {
   async uploadMedia(file: Express.Multer.File): Promise<string> {
     if (!file) {
       throw new ResponseError(400, "File is required");
     }
-
-    const storage = new Storage({
-      projectId: process.env.GOOGLE_PROJECT_ID,
-      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-    });
-
-    const bucket = storage.bucket(process.env.GOOGLE_STORAGE_BUCKET as string);
     console.log("Bucket:", bucket.name);
 
     return new Promise((resolve, reject) => {
@@ -57,79 +56,40 @@ class MediaService {
       throw new ResponseError(400, "File is required");
     }
 
-    try {
-      // Jika URL diberikan dan ada file yang perlu dihapus
-      if (url) {
-        // Memastikan URL dimulai dengan https://storage.googleapis.com/
-        const baseUrl = "https://storage.googleapis.com/";
+    // Jika URL diberikan dan ada file yang perlu dihapus
+    if (url) {
+      // Memastikan URL dimulai dengan https://storage.googleapis.com/
+      const baseUrl = "https://storage.googleapis.com/";
 
-        if (!url.startsWith(baseUrl)) {
-          throw new ResponseError(400, "Invalid URL format");
-        }
-
-        // Menghapus baseUrl dari URL untuk mendapatkan path objek di bucket
-        const objectPath = url.replace(baseUrl, "");
-
-        // Memastikan hanya ada satu instance nama bucket di path
-        const bucketName = process.env.GOOGLE_STORAGE_BUCKET as string;
-        if (objectPath.startsWith(bucketName)) {
-          // Hapus nama bucket dari path jika ada (misalnya "surevenir-gcs-bucket/")
-          const correctPath = objectPath.replace(bucketName + "/", "");
-
-          // Menginisialisasi Google Cloud Storage client
-          const storage = new Storage({
-            projectId: process.env.GOOGLE_PROJECT_ID,
-            keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-          });
-
-          const bucket = storage.bucket(
-            process.env.GOOGLE_STORAGE_BUCKET as string
-          );
-          const blob = bucket.file(correctPath);
-
-          // Mengecek apakah file ada di GCS
-          const [exists] = await blob.exists();
-          if (exists) {
-            // Menghapus file dari Google Cloud Storage (GCS)
-            await blob.delete();
-            console.log(`File deleted from GCS: ${correctPath}`);
-          }
-        } else {
-          throw new ResponseError(400, "Invalid object path or bucket name");
-        }
+      if (!url.startsWith(baseUrl)) {
+        throw new ResponseError(400, "Invalid URL format");
       }
 
-      // Upload file baru ke GCS
-      const uniqueIdentifier = Date.now(); // Gunakan timestamp untuk nama file unik
-      const storage = new Storage({
-        projectId: process.env.GOOGLE_PROJECT_ID,
-        keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-      });
+      // Menghapus baseUrl dari URL untuk mendapatkan path objek di bucket
+      const objectPath = url.replace(baseUrl, "");
 
-      const bucket = storage.bucket(
-        process.env.GOOGLE_STORAGE_BUCKET as string
-      );
-      const newBlob = bucket.file(`${uniqueIdentifier}_${file.originalname}`);
-      const blobStream = newBlob.createWriteStream();
+      // Memastikan hanya ada satu instance nama bucket di path
+      const bucketName = process.env.GOOGLE_STORAGE_BUCKET as string;
+      if (objectPath.startsWith(bucketName)) {
+        // Hapus nama bucket dari path jika ada (misalnya "surevenir-gcs-bucket/")
+        const correctPath = objectPath.replace(bucketName + "/", "");
 
-      return new Promise((resolve, reject) => {
-        blobStream.on("finish", () => {
-          const newUrl = `https://storage.googleapis.com/${bucket.name}/${newBlob.name}`;
-          console.log(`File uploaded successfully: ${file.originalname}`);
-          resolve(newUrl);
-        });
+        const blob = bucket.file(correctPath);
 
-        blobStream.on("error", (error) => {
-          console.error("Error during file upload:", error);
-          reject(new Error("Failed to upload file"));
-        });
-
-        blobStream.end(file.buffer);
-      });
-    } catch (error) {
-      console.error("Error updating media:", error);
-      throw new ResponseError(500, "Failed to update media");
+        // Mengecek apakah file ada di GCS
+        const [exists] = await blob.exists();
+        if (exists) {
+          // Menghapus file dari Google Cloud Storage (GCS)
+          await blob.delete();
+          console.log(`File deleted from GCS: ${correctPath}`);
+        }
+      } else {
+        throw new ResponseError(400, "Invalid object path or bucket name");
+      }
     }
+
+    // Upload file baru ke GCS
+    return await this.uploadMedia(file);
   }
 
   async saveMedias(medias: MediaData[]) {
@@ -192,14 +152,6 @@ class MediaService {
       }
 
       // Menginisialisasi Google Cloud Storage client
-      const storage = new Storage({
-        projectId: process.env.GOOGLE_PROJECT_ID,
-        keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-      });
-
-      const bucket = storage.bucket(
-        process.env.GOOGLE_STORAGE_BUCKET as string
-      );
       const blob = bucket.file(objectPath);
 
       // Menghapus file dari Google Cloud Storage (GCS)
@@ -231,15 +183,6 @@ class MediaService {
         console.log("No media found for deletion.");
         return;
       }
-
-      const storage = new Storage({
-        projectId: process.env.GOOGLE_PROJECT_ID,
-        keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-      });
-
-      const bucket = storage.bucket(
-        process.env.GOOGLE_STORAGE_BUCKET as string
-      );
 
       for (const media of mediasToDelete) {
         if (media.url) {
