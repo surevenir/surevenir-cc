@@ -27,6 +27,15 @@ class MerchantController {
     createResponse(res, 201, "Merchant created successfully", merchant);
   }
 
+  async addMerchantImages(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const merchant = await this.merchantService.addMerchantImages(
+      parseInt(id),
+      req.files
+    );
+    createResponse(res, 200, "Merchant images added successfully", merchant);
+  }
+
   async getAllMerchants(req: Request, res: Response, next: NextFunction) {
     const merchants = await this.merchantService.getAllMerchants();
     createResponse(res, 200, "Merchants retrieved successfully", merchants);

@@ -1,9 +1,21 @@
 import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
 import { Category } from "@prisma/client";
+import MediaService from "./mediaService";
 
 class CategoryService {
-  async createCategory(category: Category) {
+  private mediaService: MediaService;
+
+  constructor() {
+    this.mediaService = new MediaService();
+  }
+
+  async createCategory(category: Category, file: Express.Request["file"]) {
+    if (file) {
+      const mediaUrl = await this.mediaService.uploadMedia(file);
+      category.image_url = mediaUrl;
+    }
+
     return await prisma.category.create({
       data: category,
     });
@@ -27,7 +39,10 @@ class CategoryService {
     return category;
   }
 
-  async updateCategory(category: Category) {
+  async updateCategory(
+    category: Category,
+    file: Express.Multer.File | undefined
+  ) {
     const existingCategory = await prisma.category.findFirst({
       where: {
         id: category.id,
@@ -36,6 +51,16 @@ class CategoryService {
 
     if (!existingCategory) {
       throw new ResponseError(404, "Category not found");
+    }
+
+    if (file) {
+      const newUrl = await this.mediaService.updateMedia(
+        file,
+        category.image_url!
+      );
+      console.log(newUrl);
+
+      category.image_url = newUrl;
     }
 
     return await prisma.category.update({

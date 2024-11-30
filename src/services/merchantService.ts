@@ -1,7 +1,7 @@
 import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
 import { Merchant, Prisma } from "@prisma/client";
-import MediaService, { MediaType } from "./mediaService";
+import MediaService, { MediaData, MediaType } from "./mediaService";
 
 class MerchantService {
   private mediaService: MediaService;
@@ -41,24 +41,54 @@ class MerchantService {
     });
   }
 
+  async addMerchantImages(merchantId: number, files: Express.Request["files"]) {
+    const existingMerchant = await prisma.merchant.findFirst({
+      where: {
+        id: merchantId,
+      },
+    });
+
+    if (!existingMerchant) {
+      throw new ResponseError(404, "Merchant not found");
+    }
+
+    if (!files || (files as any).length === 0) {
+      throw new ResponseError(400, "No files exist");
+    }
+
+    const mediaUrls = await Promise.all(
+      (files as any).map((file: any) => this.mediaService.uploadMedia(file))
+    );
+
+    const mediaData: MediaData[] = mediaUrls.map((mediaUrl) => ({
+      url: mediaUrl,
+      itemId: merchantId,
+      type: MediaType.MERCHANT,
+    }));
+
+    await this.mediaService.saveMedias(mediaData);
+
+    return mediaData;
+  }
+
   async getAllMerchants() {
-    let merchants = await prisma.merchant.findMany({
-      include: {
-        products: {
-          select: {
-            id: true,
-          },
+    const merchants = await prisma.merchant.findMany();
+
+    const images = await prisma.images.findMany({
+      where: {
+        type: "merchant",
+        item_id: {
+          in: merchants.map((market) => market.id),
         },
       },
     });
 
-    merchants = merchants.map((merchant: any) => {
-      merchant.products_count = merchant.products.length;
-      delete merchant.products;
-      return merchant;
-    });
+    const merchantsWithImages = merchants.map((market) => ({
+      ...market,
+      images: images.filter((image) => image.item_id === market.id),
+    }));
 
-    return merchants;
+    return merchantsWithImages;
   }
 
   async getMerchantById(id: number) {

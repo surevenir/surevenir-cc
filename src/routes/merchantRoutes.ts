@@ -14,6 +14,13 @@ merchantRouter.get(
   MerchantController.getProductsInMerchant
 );
 merchantRouter.post(
+  "/:id/images",
+  authenticate,
+  authorizeAdmin,
+  multer.array("images", 10),
+  MerchantController.addMerchantImages
+);
+merchantRouter.post(
   "/",
   authenticate,
   authorizeAdmin,

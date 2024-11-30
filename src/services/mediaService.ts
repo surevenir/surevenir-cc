@@ -114,20 +114,16 @@ class MediaService {
 
   async deleteMediaByUrl(url: string) {
     try {
-      // Memastikan URL dimulai dengan https://storage.googleapis.com/
       const baseUrl = "https://storage.googleapis.com/";
 
       if (!url.startsWith(baseUrl)) {
         throw new ResponseError(400, "Invalid URL format");
       }
 
-      // Menghapus baseUrl dari URL untuk mendapatkan path objek di bucket
       const objectPath = url.replace(baseUrl, "");
 
-      // Memastikan hanya ada satu instance nama bucket di path
       const bucketName = process.env.GOOGLE_STORAGE_BUCKET as string;
       if (objectPath.startsWith(bucketName)) {
-        // Hapus nama bucket dari path jika ada (misalnya "surevenir-gcs-bucket/")
         const correctPath = objectPath.replace(bucketName + "/", "");
         await this.deleteFromGCS(correctPath, url);
       } else {
@@ -142,7 +138,6 @@ class MediaService {
   // Fungsi untuk menghapus file dari GCS dan database
   private async deleteFromGCS(objectPath: string, url: string) {
     try {
-      // Mencari media berdasarkan URL di database
       const imageRecord = await prisma.images.findFirst({
         where: { url },
       });
@@ -154,11 +149,9 @@ class MediaService {
       // Menginisialisasi Google Cloud Storage client
       const blob = bucket.file(objectPath);
 
-      // Menghapus file dari Google Cloud Storage (GCS)
       await blob.delete();
       console.log(`File deleted from GCS: ${objectPath}`);
 
-      // Menghapus data media dari database
       await prisma.images.delete({
         where: { id: imageRecord.id },
       });
@@ -190,7 +183,7 @@ class MediaService {
             `https://storage.googleapis.com/${bucket.name}/`,
             ""
           );
-          await this.deleteFromGCS(objectPath, media.url); // Menghapus file dan record
+          await this.deleteFromGCS(objectPath, media.url);
         } else {
           console.warn(`Media URL is null for item_id: ${media.item_id}`);
         }
