@@ -203,6 +203,8 @@ class CartService {
       total_price: 0,
     };
   }
+
+  async checkout(user: User, cartId: number) {}
 }
 
 export default CartService;
