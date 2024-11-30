@@ -103,7 +103,7 @@ class MarketService {
     });
   }
 
-  async updateMarket(market: Market) {
+  async updateMarket(market: Market, file: Express.Multer.File | undefined) {
     const existingMarket = await prisma.market.findFirst({
       where: {
         id: market.id,
@@ -112,6 +112,16 @@ class MarketService {
 
     if (!existingMarket) {
       throw new ResponseError(404, "Market not found");
+    }
+
+    if (file) {
+      const newUrl = await this.mediaService.updateMedia(
+        file,
+        market.profile_image_url!
+      );
+      console.log(newUrl);
+
+      market.profile_image_url = newUrl;
     }
 
     return await prisma.market.update({

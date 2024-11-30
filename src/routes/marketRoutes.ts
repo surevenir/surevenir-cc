@@ -31,8 +31,10 @@ marketRouter.patch(
   "/:id",
   authenticate,
   authorizeAdmin,
+  multer.single("image"),
   MarketController.updateMarket
 );
+
 marketRouter.delete(
   "/:id",
   authenticate,

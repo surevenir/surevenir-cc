@@ -60,13 +60,19 @@ class MarketController {
   }
 
   async updateMarket(req: Request, res: Response, next: NextFunction) {
-    let { id } = req.params;
+    const { id } = req.params;
     const data: any = UpdateMarketRequest.parse(req.body);
 
-    const market = await this.marketService.updateMarket({
-      id: parseInt(id),
-      ...data,
-    });
+    const file = req.file;
+
+    const market = await this.marketService.updateMarket(
+      {
+        id: parseInt(id),
+        ...data,
+      },
+      file
+    );
+
     createResponse(res, 200, "Market updated successfully", market);
   }
 
