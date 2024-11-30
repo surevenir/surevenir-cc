@@ -145,6 +145,12 @@ class MarketService {
 
     try {
       await this.mediaService.deleteMediaForItem(id, MediaType.MARKET);
+      if (existingMarket.profile_image_url) {
+        await this.mediaService.deleteMediaFromGCSByUrl(
+          existingMarket.profile_image_url
+        );
+      }
+
       console.log("Media for market deleted successfully.");
     } catch (error) {
       console.error("Error deleting media for market:", error);

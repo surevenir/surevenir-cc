@@ -251,6 +251,48 @@ class MediaService {
       throw new ResponseError(500, "Failed to delete media for item");
     }
   }
+
+  async deleteMediaFromGCSByUrl(url: string) {
+    try {
+      const baseUrl = "https://storage.googleapis.com/";
+
+      if (!url.startsWith(baseUrl)) {
+        throw new ResponseError(400, "Invalid URL format");
+      }
+
+      const objectPath = url.replace(baseUrl, "");
+
+      const bucketName = process.env.GOOGLE_STORAGE_BUCKET as string;
+
+      if (objectPath.startsWith(bucketName)) {
+        const correctPath = objectPath.replace(bucketName + "/", "");
+
+        const storage = new Storage({
+          projectId: process.env.GOOGLE_PROJECT_ID,
+          keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+        });
+
+        const bucket = storage.bucket(
+          process.env.GOOGLE_STORAGE_BUCKET as string
+        );
+        const blob = bucket.file(correctPath);
+
+        const [exists] = await blob.exists();
+        if (!exists) {
+          console.log(`File not found in GCS: ${correctPath}`);
+          throw new ResponseError(404, "File not found in the bucket");
+        }
+
+        await blob.delete();
+        console.log(`File deleted from GCS: ${correctPath}`);
+      } else {
+        throw new ResponseError(400, "Invalid object path or bucket name");
+      }
+    } catch (error) {
+      console.error("Error deleting media from GCS:", error);
+      throw new ResponseError(500, "Failed to delete media from GCS");
+    }
+  }
 }
 
 export default MediaService;

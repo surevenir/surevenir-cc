@@ -200,11 +200,32 @@ class MerchantService {
       throw new ResponseError(404, "Merchant not found");
     }
 
-    return await prisma.merchant.delete({
-      where: {
-        id,
-      },
-    });
+    try {
+      await this.mediaService.deleteMediaForItem(id, MediaType.MERCHANT);
+      if (existingMerchant.profile_image_url) {
+        await this.mediaService.deleteMediaFromGCSByUrl(
+          existingMerchant.profile_image_url
+        );
+      }
+
+      console.log("Media for merchant deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting media for merchant:", error);
+      throw new ResponseError(500, "Failed to delete media for merchant");
+    }
+
+    try {
+      const deletedMerchant = await prisma.merchant.delete({
+        where: {
+          id,
+        },
+      });
+      console.log("Merchant deleted successfully:", deletedMerchant);
+      return deletedMerchant;
+    } catch (error) {
+      console.error("Error deleting merchant:", error);
+      throw new ResponseError(500, "Failed to delete merchant");
+    }
   }
 }
 

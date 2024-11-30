@@ -8,7 +8,7 @@ class ReviewService {
 
   constructor() {
     this.mediaService = new MediaService();
-  } 
+  }
 
   async createReview(review: Review, files: Express.Request["files"]) {
     const existingProduct = await prisma.product.findFirst({

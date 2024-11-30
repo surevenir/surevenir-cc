@@ -82,11 +82,31 @@ class CategoryService {
       throw new ResponseError(404, "Category not found");
     }
 
-    return await prisma.category.delete({
-      where: {
-        id,
-      },
-    });
+    try {
+      if (existingCategory.image_url) {
+        await this.mediaService.deleteMediaFromGCSByUrl(
+          existingCategory.image_url
+        );
+      }
+
+      console.log("Media for category deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting media for category:", error);
+      throw new ResponseError(500, "Failed to delete media for category");
+    }
+
+    try {
+      const deletedcategory = await prisma.category.delete({
+        where: {
+          id,
+        },
+      });
+      console.log("category deleted successfully:", deletedcategory);
+      return deletedcategory;
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      throw new ResponseError(500, "Failed to delete category");
+    }
   }
 }
 
