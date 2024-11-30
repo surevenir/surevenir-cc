@@ -56,6 +56,12 @@ class CartController {
     const result = await this.cartService.deleteAllProductsInCart(req.user!);
     createResponse(res, 200, "All products deleted from cart", result);
   }
+
+  async checkout(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const result = await this.cartService.checkout(req.user!, parseInt(id));
+    createResponse(res, 200, "Checkout successful", result);
+  }
 }
 
 export default new CartController();
