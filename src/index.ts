@@ -6,6 +6,7 @@ import merchantRoutes from "./routes/merchantRoutes";
 import productRoutes from "./routes/productRoutes";
 import reviewRoutes from "./routes/reviewRoutes";
 import cartRoutes from "./routes/cartRoutes";
+import mediaRoutes from "./routes/mediaRoutes";
 import errorHandler from "./middlewares/errorHandler";
 import "./types/global/authUser";
 import multer from "./middlewares/multer";
@@ -28,6 +29,7 @@ app.use("/api/merchants", merchantRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/carts", cartRoutes);
+app.use("/api/images", mediaRoutes);
 
 app.post(
   "/api/upload",
