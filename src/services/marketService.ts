@@ -143,11 +143,26 @@ class MarketService {
       throw new ResponseError(404, "Market not found");
     }
 
-    return await prisma.market.delete({
-      where: {
-        id,
-      },
-    });
+    try {
+      await this.mediaService.deleteMediaForItem(id, MediaType.MARKET);
+      console.log("Media for market deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting media for market:", error);
+      throw new ResponseError(500, "Failed to delete media for market");
+    }
+
+    try {
+      const deletedMarket = await prisma.market.delete({
+        where: {
+          id,
+        },
+      });
+      console.log("Market deleted successfully:", deletedMarket);
+      return deletedMarket;
+    } catch (error) {
+      console.error("Error deleting market:", error);
+      throw new ResponseError(500, "Failed to delete market");
+    }
   }
 }
 

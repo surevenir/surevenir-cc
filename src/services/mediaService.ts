@@ -217,6 +217,48 @@ class MediaService {
       throw new ResponseError(500, "Failed to delete from GCS");
     }
   }
+
+  async deleteMediaForItem(itemId: number, type: MediaType): Promise<void> {
+    try {
+      const mediasToDelete = await prisma.images.findMany({
+        where: {
+          item_id: itemId,
+          type: type,
+        },
+      });
+
+      if (mediasToDelete.length === 0) {
+        console.log("No media found for deletion.");
+        return;
+      }
+
+      const storage = new Storage({
+        projectId: process.env.GOOGLE_PROJECT_ID,
+        keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+      });
+
+      const bucket = storage.bucket(
+        process.env.GOOGLE_STORAGE_BUCKET as string
+      );
+
+      for (const media of mediasToDelete) {
+        if (media.url) {
+          const objectPath = media.url.replace(
+            `https://storage.googleapis.com/${bucket.name}/`,
+            ""
+          );
+          await this.deleteFromGCS(objectPath, media.url); // Menghapus file dan record
+        } else {
+          console.warn(`Media URL is null for item_id: ${media.item_id}`);
+        }
+      }
+
+      console.log(`${mediasToDelete.length} media items deleted successfully.`);
+    } catch (error) {
+      console.error("Error deleting media for item:", error);
+      throw new ResponseError(500, "Failed to delete media for item");
+    }
+  }
 }
 
 export default MediaService;
