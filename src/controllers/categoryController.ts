@@ -18,7 +18,7 @@ class CategoryController {
   async createCategory(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateCategoryRequest.parse(req.body);
 
-    const category = await this.categoryService.createCategory(data);
+    const category = await this.categoryService.createCategory(data, req.file);
     createResponse(res, 201, "Category created successfully", category);
   }
 
@@ -36,10 +36,16 @@ class CategoryController {
   async updateCategory(req: Request, res: Response, next: NextFunction) {
     let { id } = req.params;
     const data: any = UpdateCategoryRequest.parse(req.body);
-    const category = await this.categoryService.updateCategory({
-      id: parseInt(id),
-      ...data,
-    });
+
+    const file = req.file;
+
+    const category = await this.categoryService.updateCategory(
+      {
+        id: parseInt(id),
+        ...data,
+      },
+      file
+    );
     createResponse(res, 200, "Category updated successfully", category);
   }
 
