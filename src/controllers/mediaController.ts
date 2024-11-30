@@ -23,12 +23,8 @@ class MediaController {
       createResponse(res, 400, "URL is required and must be a string", {});
     }
 
-    try {
-      await this.mediaService.deleteMediaByUrl(url as string);
-      createResponse(res, 200, "Media deleted successfully", {});
-    } catch (error) {
-      next(error);
-    }
+    await this.mediaService.deleteMediaByUrl(url as string);
+    createResponse(res, 200, "Media deleted successfully", {});
   }
 }
 
