@@ -17,5 +17,6 @@ cartRouter.put(
   authorizeAdmin,
   CartController.updateCheckoutStatus
 );
+cartRouter.get("/checkout", authenticate, CartController.getCheckouts);
 
 export default cartRouter;

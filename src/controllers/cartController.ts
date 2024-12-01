@@ -79,6 +79,11 @@ class CartController {
     );
     createResponse(res, 200, "Checkout status updated", result);
   }
+
+  async getCheckouts(req: Request, res: Response, next: NextFunction) {
+    const result = await this.cartService.getCheckouts(req.user!);
+    createResponse(res, 200, "Checkouts fetched", result);
+  }
 }
 
 export default new CartController();

@@ -318,7 +318,31 @@ class CartService {
       },
     });
 
-    return {};
+    return {
+      checkout: existingCheckout,
+      status: status,
+    };
+  }
+
+  async getCheckouts(user: User) {
+    const checkouts = await prisma.checkout.findMany({
+      where: {
+        user_id: user.id,
+      },
+      include: {
+        checkout_details: {
+          include: {
+            product: {
+              include: {
+                merchant: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return checkouts;
   }
 }
 
