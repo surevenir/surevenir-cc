@@ -17,7 +17,12 @@ class ReviewController {
 
   async createReview(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateReviewRequest.parse(req.body);
-    const review = await this.reviewService.createReview(data, req.files);
+    const review = await this.reviewService.createReview({
+      ...data,
+      rating: parseInt(data.rating),
+      product_id: parseInt(data.product_id),
+      user_id: req.user!.id,
+    }, req.user!, req.files);
     createResponse(res, 201, "Review created successfully", review);
   }
 
@@ -44,7 +49,7 @@ class ReviewController {
 
   async deleteReview(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    await this.reviewService.deleteReviewById(parseInt(id));
+    await this.reviewService.deleteReviewById(parseInt(id), req.user!);
     createResponse(res, 200, "Review deleted successfully", { id });
   }
 }
