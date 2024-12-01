@@ -61,11 +61,9 @@ class CartController {
 
   async checkout(req: Request, res: Response, next: NextFunction) {
     Checkout.parse(req.body);
-    const { id } = req.params;
     const productIds = req.body.product_ids as number[];
     const result = await this.cartService.checkout(
       req.user!,
-      parseInt(id),
       productIds
     );
     createResponse(res, 200, "Checkout successful", result);

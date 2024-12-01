@@ -205,15 +205,11 @@ class CartService {
     };
   }
 
-  async checkout(user: User, cartId: number, productIds: number[]) {
+  async checkout(user: User, productIds: number[]) {
     // check if all products in cart
     const cartWithProducts = await prisma.cart.findMany({
       where: {
-        AND: [
-          { id: cartId },
-          { user_id: user.id },
-          { product_id: { in: productIds } },
-        ],
+        AND: [{ user_id: user.id }, { product_id: { in: productIds } }],
       },
       include: {
         product: {
@@ -228,9 +224,20 @@ class CartService {
       },
     });
     console.log("cartWithProducts:", cartWithProducts);
+    for (const cart of cartWithProducts as any) {
+      cart.subtotal_price = cart.product.price * cart.quantity;
+    }
 
-    if (cartWithProducts.length === 0) {
-      throw new ResponseError(404, "Product not found in cart");
+    // check all product ids are matched
+    const cartProductIds = cartWithProducts.map((cart) => cart.product_id);
+    const notFoundProductIds = productIds.filter(
+      (id) => !cartProductIds.includes(id)
+    );
+    if (notFoundProductIds.length > 0) {
+      throw new ResponseError(
+        404,
+        "Product in cart not found. id: " + notFoundProductIds.join(", ")
+      );
     }
 
     const totalPrice = cartWithProducts.reduce((acc, cart) => {
@@ -280,7 +287,7 @@ class CartService {
 
     await prisma.cart.deleteMany({
       where: {
-        id: cartId,
+        AND: [{ user_id: user.id }, { product_id: { in: productIds } }],
       },
     });
 
