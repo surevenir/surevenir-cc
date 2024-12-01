@@ -88,7 +88,7 @@ The server will run by default at `http://localhost:5000`.
 
 ## API Documentation
 
-`TODO`
+https://documenter.getpostman.com/view/27683987/2sAYBVisLw
 
 ## Acknowledgements
 
