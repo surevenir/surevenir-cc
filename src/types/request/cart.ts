@@ -9,4 +9,8 @@ const UpdateProductInCart = z.object({
   quantity: z.number(),
 });
 
+const Checkout = z.object({
+  product_ids: z.array(z.number()),
+});
+
 export { AddProductsToCart, UpdateProductInCart };

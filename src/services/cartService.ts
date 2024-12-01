@@ -1,7 +1,7 @@
 import prisma from "../config/database";
-import { ImageType } from "../types/enum/dbEnum";
+import { CheckoutStatus, ImageType } from "../types/enum/dbEnum";
 import ResponseError from "../utils/responseError";
-import { User } from "@prisma/client";
+import { Cart, CheckoutDetails, User } from "@prisma/client";
 import { MediaType } from "./mediaService";
 
 class CartService {
@@ -204,7 +204,114 @@ class CartService {
     };
   }
 
-  async checkout(user: User, cartId: number) {}
+  async checkout(user: User, cartId: number, productIds: number[]) {
+    // check if all products in cart
+    const cartWithProducts = await prisma.cart.findMany({
+      where: {
+        AND: [
+          { id: cartId },
+          { user_id: user.id },
+          { product_id: { in: productIds } },
+        ],
+      },
+      include: {
+        product: {
+          include: {
+            merchant: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    console.log("cartWithProducts:", cartWithProducts);
+
+    if (cartWithProducts.length === 0) {
+      throw new ResponseError(404, "Product not found in cart");
+    }
+
+    const totalPrice = cartWithProducts.reduce((acc, cart) => {
+      return acc + cart.product.price * cart.quantity;
+    }, 0);
+    console.log("totalPrice:", totalPrice);
+
+    const checkout = await prisma.checkout.create({
+      data: {
+        user_id: user.id,
+        total_price: totalPrice,
+        status: CheckoutStatus.PENDING,
+      },
+    });
+    console.log("checkout:", checkout);
+
+    const checkoutDetails = [];
+    for (const cart of cartWithProducts) {
+      checkoutDetails.push({
+        product_id: cart.product_id,
+        checkout_id: checkout.id,
+        product_quantity: cart.quantity,
+        product_subtotal: cart.product.price * cart.quantity,
+        product_identity: cart.product.name + "-" + cart.product.merchant.name,
+        product_price: cart.product.price,
+      });
+    }
+    console.log("checkoutDetails:", checkoutDetails);
+
+    await prisma.checkoutDetails.createMany({
+      data: checkoutDetails,
+    });
+
+    // update stock for each product
+    for (const cart of cartWithProducts) {
+      await prisma.product.update({
+        where: {
+          id: cart.product_id,
+        },
+        data: {
+          stock: {
+            decrement: cart.quantity,
+          },
+        },
+      });
+    }
+
+    await prisma.cart.deleteMany({
+      where: {
+        id: cartId,
+      },
+    });
+
+    return {
+      cart: cartWithProducts,
+      checkout: checkout,
+      checkout_details: checkoutDetails,
+    };
+  }
+
+  async updateCheckoutStatus(checkoutId: number, status: CheckoutStatus) {
+    const existingCheckout = await prisma.checkout.findFirst({
+      where: {
+        id: checkoutId,
+      },
+    });
+
+    if (!existingCheckout) {
+      throw new ResponseError(404, "Checkout not found");
+    }
+
+    await prisma.checkout.update({
+      where: {
+        id: checkoutId,
+      },
+      data: {
+        status: status,
+      },
+    });
+
+    return {};
+  }
 }
 
 export default CartService;

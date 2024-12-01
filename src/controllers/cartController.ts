@@ -38,11 +38,7 @@ class CartController {
     createResponse(res, 200, "Cart fetched", result);
   }
 
-  async deleteCartItem(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  async deleteCartItem(req: Request, res: Response, next: NextFunction) {
     const cartId = parseInt(req.params.id);
     const result = await this.cartService.deleteCartItem(req.user!, cartId);
     createResponse(res, 200, "Product deleted from cart", result);
@@ -59,7 +55,12 @@ class CartController {
 
   async checkout(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const result = await this.cartService.checkout(req.user!, parseInt(id));
+    const productIds = req.body.product_ids as number[];
+    const result = await this.cartService.checkout(
+      req.user!,
+      parseInt(id),
+      productIds
+    );
     createResponse(res, 200, "Checkout successful", result);
   }
 }

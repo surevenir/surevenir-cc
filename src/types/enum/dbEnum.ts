@@ -15,4 +15,11 @@ enum Provider {
   EMAIL = "EMAIL",
 }
 
-export { Role, ImageType, Provider };
+enum CheckoutStatus {
+  PENDING = "PENDING",
+  DELIVERED = "DELIVERED",
+  CANCELLED = "CANCELLED",
+  COMPLETED = "COMPLETED",
+}
+
+export { Role, ImageType, Provider, CheckoutStatus };
