@@ -140,6 +140,7 @@ class CartService {
       });
 
       cart.product.images = images.map((image) => image.url);
+      cart.subtotal_price = cart.product.price * cart.quantity;
     }
 
     // calculate product total price and total price
