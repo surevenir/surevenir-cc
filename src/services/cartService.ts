@@ -290,7 +290,7 @@ class CartService {
     };
   }
 
-  async updateCheckoutStatus(checkoutId: number, status: CheckoutStatus) {
+  async updateCheckoutStatus(checkoutId: number, status: string) {
     const existingCheckout = await prisma.checkout.findFirst({
       where: {
         id: checkoutId,
