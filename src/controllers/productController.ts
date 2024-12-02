@@ -17,7 +17,9 @@ class ProductController {
 
   async createProduct(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateProductRequest.parse(req.body);
-    const categoryIds = data.category_ids.split(",").map((id: string) => parseInt(id));
+    const categoryIds = data.category_ids
+      .split(",")
+      .map((id: string) => parseInt(id));
     delete data.category_ids;
 
     const product = await this.productService.createProduct(

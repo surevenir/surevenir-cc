@@ -21,14 +21,16 @@ class MerchantService {
       throw new ResponseError(404, "User not found");
     }
 
-    const existingMarket = await prisma.market.findFirst({
-      where: {
-        id: merchant.market_id ?? undefined,
-      },
-    });
+    if (merchant.market_id) {
+      const existingMarket = await prisma.market.findFirst({
+        where: {
+          id: merchant.market_id ?? undefined,
+        },
+      });
 
-    if (!existingMarket) {
-      throw new ResponseError(404, "Market not found");
+      if (!existingMarket) {
+        throw new ResponseError(404, "Market not found");
+      }
     }
 
     if (file) {
@@ -148,32 +150,30 @@ class MerchantService {
       },
     });
 
+    if (!existingMerchant) {
+      throw new ResponseError(404, "Merchant not found");
+    }
+
     const existingUser = await prisma.user.findFirst({
       where: {
         id: merchant.user_id,
       },
     });
 
-    const existingMarket = await prisma.market.findFirst({
-      where: {
-        id: merchant.market_id ?? undefined,
-      },
-    });
-
-    if (!existingMerchant) {
-      throw new ResponseError(404, "Merchant not found");
-    }
-
-    if (!existingUser && !existingMarket) {
-      throw new ResponseError(404, "User and market not found");
-    }
-
     if (!existingUser) {
       throw new ResponseError(404, "User not found");
     }
 
-    if (!existingMarket) {
-      throw new ResponseError(404, "Market not found");
+    if (merchant.market_id) {
+      const existingMarket = await prisma.market.findFirst({
+        where: {
+          id: merchant.market_id ?? undefined,
+        },
+      });
+
+      if (!existingMarket) {
+        throw new ResponseError(404, "Market not found");
+      }
     }
 
     if (file) {
