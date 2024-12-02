@@ -9,4 +9,12 @@ const UpdateProductInCart = z.object({
   quantity: z.number(),
 });
 
-export { AddProductsToCart, UpdateProductInCart };
+const Checkout = z.object({
+  product_ids: z.array(z.number()),
+});
+
+const UpdateCheckoutStatus = z.object({
+  status: z.enum(["PENDING", "DELIVERED", "CANCELLED", "COMPLETED"]),
+});
+
+export { AddProductsToCart, UpdateProductInCart, Checkout, UpdateCheckoutStatus };

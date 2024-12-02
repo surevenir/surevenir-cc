@@ -1,7 +1,7 @@
 import prisma from "../config/database";
-import { ImageType } from "../types/enum/dbEnum";
+import { CheckoutStatus, ImageType } from "../types/enum/dbEnum";
 import ResponseError from "../utils/responseError";
-import { User } from "@prisma/client";
+import { Cart, CheckoutDetails, User } from "@prisma/client";
 import { MediaType } from "./mediaService";
 
 class CartService {
@@ -140,6 +140,7 @@ class CartService {
       });
 
       cart.product.images = images.map((image) => image.url);
+      cart.subtotal_price = cart.product.price * cart.quantity;
     }
 
     // calculate product total price and total price
@@ -204,7 +205,145 @@ class CartService {
     };
   }
 
-  async checkout(user: User, cartId: number) {}
+  async checkout(user: User, productIds: number[]) {
+    // check if all products in cart
+    const cartWithProducts = await prisma.cart.findMany({
+      where: {
+        AND: [{ user_id: user.id }, { product_id: { in: productIds } }],
+      },
+      include: {
+        product: {
+          include: {
+            merchant: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    console.log("cartWithProducts:", cartWithProducts);
+    for (const cart of cartWithProducts as any) {
+      cart.subtotal_price = cart.product.price * cart.quantity;
+    }
+
+    // check all product ids are matched
+    const cartProductIds = cartWithProducts.map((cart) => cart.product_id);
+    const notFoundProductIds = productIds.filter(
+      (id) => !cartProductIds.includes(id)
+    );
+    if (notFoundProductIds.length > 0) {
+      throw new ResponseError(
+        404,
+        "Product in cart not found. id: " + notFoundProductIds.join(", ")
+      );
+    }
+
+    const totalPrice = cartWithProducts.reduce((acc, cart) => {
+      return acc + cart.product.price * cart.quantity;
+    }, 0);
+    console.log("totalPrice:", totalPrice);
+
+    const checkout = await prisma.checkout.create({
+      data: {
+        user_id: user.id,
+        total_price: totalPrice,
+        status: CheckoutStatus.PENDING,
+      },
+    });
+    console.log("checkout:", checkout);
+
+    const checkoutDetails = [];
+    for (const cart of cartWithProducts) {
+      checkoutDetails.push({
+        product_id: cart.product_id,
+        checkout_id: checkout.id,
+        product_quantity: cart.quantity,
+        product_subtotal: cart.product.price * cart.quantity,
+        product_identity: cart.product.name + "-" + cart.product.merchant.name,
+        product_price: cart.product.price,
+      });
+    }
+    console.log("checkoutDetails:", checkoutDetails);
+
+    await prisma.checkoutDetails.createMany({
+      data: checkoutDetails,
+    });
+
+    // update stock for each product
+    for (const cart of cartWithProducts) {
+      await prisma.product.update({
+        where: {
+          id: cart.product_id,
+        },
+        data: {
+          stock: {
+            decrement: cart.quantity,
+          },
+        },
+      });
+    }
+
+    await prisma.cart.deleteMany({
+      where: {
+        AND: [{ user_id: user.id }, { product_id: { in: productIds } }],
+      },
+    });
+
+    return {
+      cart: cartWithProducts,
+      checkout: checkout,
+      checkout_details: checkoutDetails,
+    };
+  }
+
+  async updateCheckoutStatus(checkoutId: number, status: string) {
+    const existingCheckout = await prisma.checkout.findFirst({
+      where: {
+        id: checkoutId,
+      },
+    });
+
+    if (!existingCheckout) {
+      throw new ResponseError(404, "Checkout not found");
+    }
+
+    await prisma.checkout.update({
+      where: {
+        id: checkoutId,
+      },
+      data: {
+        status: status,
+      },
+    });
+
+    return {
+      checkout: existingCheckout,
+      status: status,
+    };
+  }
+
+  async getCheckouts(user: User) {
+    const checkouts = await prisma.checkout.findMany({
+      where: {
+        user_id: user.id,
+      },
+      include: {
+        checkout_details: {
+          include: {
+            product: {
+              include: {
+                merchant: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return checkouts;
+  }
 }
 
 export default CartService;

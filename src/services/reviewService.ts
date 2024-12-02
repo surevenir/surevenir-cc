@@ -1,7 +1,9 @@
 import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
-import { Review } from "@prisma/client";
+import { Review, User } from "@prisma/client";
 import MediaService, { MediaData, MediaType } from "./mediaService";
+import { Checkout } from "../types/request/cart";
+import { CheckoutStatus } from "../types/enum/dbEnum";
 
 class ReviewService {
   private mediaService: MediaService;
@@ -10,7 +12,11 @@ class ReviewService {
     this.mediaService = new MediaService();
   }
 
-  async createReview(review: Review, files: Express.Request["files"]) {
+  async createReview(
+    review: Review,
+    user: User,
+    files: Express.Request["files"]
+  ) {
     const existingProduct = await prisma.product.findFirst({
       where: {
         id: review.product_id,
@@ -19,7 +25,7 @@ class ReviewService {
 
     const existingUser = await prisma.user.findFirst({
       where: {
-        id: review.user_id,
+        id: user.id,
       },
     });
 
@@ -35,11 +41,44 @@ class ReviewService {
       throw new ResponseError(404, "User not found");
     }
 
-    await this.uploadAndSaveMediasIfExist(files, review.id);
+    // check if user already reviewed the product
+    const existingReview = await prisma.review.findFirst({
+      where: {
+        product_id: review.product_id,
+        user_id: user.id,
+      },
+    });
+    if (existingReview) {
+      throw new ResponseError(400, "You already reviewed this product");
+    }
 
-    return await prisma.review.create({
+    // check if user already checked out the product
+    const existingCheckouts = await prisma.checkoutDetails.findMany({
+      where: {
+        product_id: review.product_id,
+        checkout: {
+          user_id: user.id,
+          status: CheckoutStatus.COMPLETED,
+        },
+      },
+    });
+    if (existingCheckouts.length === 0) {
+      throw new ResponseError(
+        400,
+        "You need to order and completetly checkout to review this product"
+      );
+    }
+
+    const result = await prisma.review.create({
       data: review,
     });
+
+    const images = await this.uploadAndSaveMediasIfExist(files, result.id);
+
+    return {
+      ...result,
+      images,
+    };
   }
 
   async getAllReviews() {
@@ -103,10 +142,11 @@ class ReviewService {
     });
   }
 
-  async deleteReviewById(id: number) {
+  async deleteReviewById(id: number, user: User) {
     const existingReview = await prisma.review.findFirst({
       where: {
         id,
+        user_id: user.id,
       },
     });
 
@@ -137,6 +177,7 @@ class ReviewService {
       }));
 
       await this.mediaService.saveMedias(mediaData);
+      return mediaData;
     }
   }
 }
