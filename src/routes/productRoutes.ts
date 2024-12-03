@@ -14,6 +14,13 @@ productRouter.get(
   ProductController.getProductReviews
 );
 productRouter.post(
+  "/:id/images",
+  authenticate,
+  authorizeAdmin,
+  multer.array("images", 10),
+  ProductController.addProductImages
+);
+productRouter.post(
   "/",
   authenticate,
   authorizeAdmin,

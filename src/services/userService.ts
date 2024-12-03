@@ -2,6 +2,7 @@ import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
 import { User } from "@prisma/client";
 import MediaService from "./mediaService";
+import crypto from "crypto";
 
 class UserService {
   private mediaService: MediaService;
@@ -34,7 +35,30 @@ class UserService {
       user.profile_image_url = mediaUrl;
     }
 
+    const encryptPassword = (password: string): string => {
+      // Mengambil key dari env
+      const key = process.env.NEXT_PUBLIC_PASSWORD_KEY;
+
+      if (!key) {
+        throw new Error("PASSWORD_KEY is not defined");
+      }
+
+      // Hash key menjadi panjang 32 byte dengan SHA-256
+      const hashedKey = crypto.createHash("sha256").update(key).digest();
+
+      const algorithm = "aes-256-ctr";
+      const iv = crypto.randomBytes(16); // Inisialisasi vector acak
+      const cipher = crypto.createCipheriv(algorithm, hashedKey, iv);
+      let encrypted = cipher.update(password, "utf8", "hex");
+      encrypted += cipher.final("hex");
+
+      return `${iv.toString("hex")}:${encrypted}`;
+    };
+
     user.password = user.password === "" ? null : user.password;
+    if (user.password) {
+      user.password = encryptPassword(user.password);
+    }
     user.role = user.role === null ? "USER" : user.role;
 
     return await prisma.user.create({

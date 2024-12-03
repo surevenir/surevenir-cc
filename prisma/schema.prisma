@@ -95,8 +95,8 @@ model ProductCategory {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
 
-  product  Product  @relation(fields: [product_id], references: [id])
-  category Category @relation(fields: [category_id], references: [id])
+  product  Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
 
   @@map("product_categories")
 }
@@ -112,7 +112,7 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
 
-  merchant           Merchant          @relation(fields: [merchant_id], references: [id])
+  merchant           Merchant          @relation(fields: [merchant_id], references: [id], onDelete: Cascade)
   reviews            Review[]
   carts              Cart[]
   product_categories ProductCategory[]
@@ -130,8 +130,8 @@ model Review {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now())
 
-  user    User    @relation(fields: [user_id], references: [id])
-  product Product @relation(fields: [product_id], references: [id])
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   @@map("reviews")
 }
@@ -145,8 +145,8 @@ model Cart {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now())
 
-  user    User    @relation(fields: [user_id], references: [id])
-  product Product @relation(fields: [product_id], references: [id])
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   @@map("carts")
 }
@@ -160,7 +160,7 @@ model Checkout {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
 
-  user             User              @relation(fields: [user_id], references: [id])
+  user             User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
   checkout_details CheckoutDetails[]
 
   @@map("checkouts")
@@ -177,7 +177,7 @@ model CheckoutDetails {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @default(now())
 
-  checkout Checkout @relation(fields: [checkout_id], references: [id])
+  checkout Checkout @relation(fields: [checkout_id], references: [id], onDelete: Cascade)
   product  Product? @relation(fields: [product_id], references: [id], onDelete: SetNull)
 
   @@map("checkout_details")

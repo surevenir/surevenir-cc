@@ -35,6 +35,15 @@ class ProductController {
     createResponse(res, 201, "Product created successfully", product);
   }
 
+  async addProductImages(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const product = await this.productService.addProductImages(
+      parseInt(id),
+      req.files
+    );
+    createResponse(res, 200, "Product images added successfully", product);
+  }
+
   async getProductById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const product = await this.productService.getProductById(parseInt(id));

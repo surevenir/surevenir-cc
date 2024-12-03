@@ -113,7 +113,7 @@ class ProductService {
       oldest: { column: "createdAt", direction: "asc" },
       price_asc: { column: "price", direction: "asc" },
       price_desc: { column: "price", direction: "desc" },
-      popular: { column: "popularity", direction: "desc" },
+      // popular: { column: "popularity", direction: "desc" },
     };
 
     const sortOption = sortOptions[sort_by] || sortOptions.newest;
@@ -235,7 +235,13 @@ class ProductService {
       where: {
         id: product.id,
       },
-      data: product,
+      data: {
+        name: product.name,
+        description: product.description,
+        merchant_id: product.merchant_id,
+        price: product.price,
+        stock: product.stock,
+      },
     });
 
     if (categoryIds.length > 0) {
@@ -286,6 +292,15 @@ class ProductService {
       throw new ResponseError(404, "Product not found");
     }
 
+    try {
+      await this.mediaService.deleteMediaForItem(id, MediaType.PRODUCT);
+
+      console.log("Media for merchant deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting media for merchant:", error);
+      throw new ResponseError(500, "Failed to delete media for merchant");
+    }
+
     return await prisma.product.delete({
       where: {
         id,
@@ -312,6 +327,36 @@ class ProductService {
 
       return mediaData;
     }
+  }
+
+  async addProductImages(productId: number, files: Express.Request["files"]) {
+    const existingProduct = await prisma.product.findFirst({
+      where: {
+        id: productId,
+      },
+    });
+
+    if (!existingProduct) {
+      throw new ResponseError(404, "Product not found");
+    }
+
+    if (!files || (files as any).length === 0) {
+      throw new ResponseError(400, "No files exist");
+    }
+
+    const mediaUrls = await Promise.all(
+      (files as any).map((file: any) => this.mediaService.uploadMedia(file))
+    );
+
+    const mediaData: MediaData[] = mediaUrls.map((mediaUrl) => ({
+      url: mediaUrl,
+      itemId: productId,
+      type: MediaType.PRODUCT,
+    }));
+
+    await this.mediaService.saveMedias(mediaData);
+
+    return mediaData;
   }
 }
 
