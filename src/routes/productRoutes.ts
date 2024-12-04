@@ -21,6 +21,21 @@ productRouter.post(
   ProductController.addProductImages
 );
 productRouter.post(
+  "/top-favorites",
+  authenticate,
+  ProductController.getTopFavoritedProducts
+);
+productRouter.post(
+  "/:id/favorites",
+  authenticate,
+  ProductController.addProductToFavorite
+);
+productRouter.delete(
+  "/:id/favorites",
+  authenticate,
+  ProductController.deleteProductFromFavorite
+);
+productRouter.post(
   "/",
   authenticate,
   authorizeAdmin,

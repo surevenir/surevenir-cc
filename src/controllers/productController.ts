@@ -46,7 +46,10 @@ class ProductController {
 
   async getProductById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const product = await this.productService.getProductById(parseInt(id));
+    const product = await this.productService.getProductById(
+      parseInt(id),
+      req.user!.id
+    );
     createResponse(res, 200, "Product retrieved successfully", product);
   }
 
@@ -89,6 +92,41 @@ class ProductController {
     const { id } = req.params;
     await this.productService.deleteProductById(parseInt(id));
     createResponse(res, 200, "Product deleted successfully", { id });
+  }
+
+  async getTopFavoritedProducts(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const { limit = 10 } = req.query;
+    const products = await this.productService.getTopFavoritedProducts(
+      parseInt(limit as string)
+    );
+    createResponse(res, 200, "Top favorited products retrieved successfully", {
+      products,
+    });
+  }
+
+  async addProductToFavorite(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const product = await this.productService.addProductToFavorite(
+      parseInt(id),
+      req.user!.id!
+    );
+    createResponse(res, 200, "Product images added successfully", product);
+  }
+
+  async deleteProductFromFavorite(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const { id } = req.params;
+    await this.productService.deleteProductFromFavorite(parseInt(id));
+    createResponse(res, 200, "Product deleted from favorite successfully", {
+      id,
+    });
   }
 }
 

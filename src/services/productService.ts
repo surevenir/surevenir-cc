@@ -56,7 +56,7 @@ class ProductService {
     };
   }
 
-  async getProductById(id: number) {
+  async getProductById(id: number, userId: string) {
     const product = await prisma.product.findUnique({
       where: {
         id,
@@ -98,9 +98,17 @@ class ProductService {
       throw new ResponseError(404, "Product not found");
     }
 
+    const isFavorite = await prisma.favorite.findFirst({
+      where: {
+        product_id: id,
+        user_id: userId,
+      },
+    });
+
     return {
       ...product,
       images: imagesUrl,
+      is_favorite: isFavorite ? true : false,
     };
   }
 
@@ -357,6 +365,104 @@ class ProductService {
     await this.mediaService.saveMedias(mediaData);
 
     return mediaData;
+  }
+
+  async getTopFavoritedProducts(limit: number) {
+    let products = await prisma.$queryRaw`
+      SELECT p.*, COUNT(f.product_id) as favorite_count
+      FROM product p
+      LEFT JOIN favorite f ON p.id = f.product_id
+      GROUP BY p.id
+      ORDER BY favorite_count DESC
+      LIMIT ${limit}
+    `;
+
+    const productIds: number[] = (products as any).map((product: any) => product.id);
+    products = await prisma.product.findMany({
+      where: {
+        id: {
+          in: productIds,
+        },
+      },
+      include: {
+        merchant: {
+          select: {
+            id: true,
+            name: true,
+            market: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        product_categories: {
+          select: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const imagesUrl = await prisma.images.findMany({
+      where: {
+        item_id: {
+          in: productIds,
+        },
+        type: MediaType.PRODUCT,
+      },
+    });
+
+    products = (products as any).map((product: any) => ({
+      ...product,
+      images: imagesUrl.filter((image) => image.item_id === product.id),
+    }));
+
+    return products;
+  }
+
+  async addProductToFavorite(productId: number, userId: string) {
+    const existingProduct = await prisma.product.findFirst({
+      where: {
+        id: productId,
+      },
+    });
+
+    if (!existingProduct) {
+      throw new ResponseError(404, "Product not found");
+    }
+
+    const existingFavorite = await prisma.favorite.findFirst({
+      where: {
+        product_id: productId,
+        user_id: userId,
+      },
+    });
+
+    if (existingFavorite) {
+      throw new ResponseError(400, "Product already added to favorite");
+    }
+
+    return await prisma.favorite.create({
+      data: {
+        product_id: productId,
+        user_id: userId,
+      },
+    });
+  }
+
+  async deleteProductFromFavorite(id: number) {
+    return await prisma.favorite.delete({
+      where: {
+        id,
+      },
+    });
   }
 }
 
