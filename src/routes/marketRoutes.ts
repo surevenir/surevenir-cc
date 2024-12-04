@@ -8,6 +8,7 @@ const marketRouter = express.Router();
 
 marketRouter.get("/", authenticate, MarketController.getAllMarkets);
 marketRouter.get("/:id", authenticate, MarketController.getMarketById);
+marketRouter.get("/slug/:slug", authenticate, MarketController.getMarketBySlug);
 marketRouter.get(
   "/:id/merchants",
   authenticate,

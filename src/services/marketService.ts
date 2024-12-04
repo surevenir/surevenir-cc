@@ -95,6 +95,30 @@ class MarketService {
     };
   }
 
+  async getMarketBySlug(slug: string) {
+    const market = await prisma.market.findFirst({
+      where: {
+        slug,
+      },
+    });
+
+    if (!market) {
+      throw new ResponseError(404, "Market not found");
+    }
+
+    const images = await prisma.images.findMany({
+      where: {
+        item_id: market.id,
+        type: MediaType.MARKET,
+      },
+    });
+
+    return {
+      ...market,
+      images,
+    };
+  }
+
   async getMerchantsInMarket(id: number) {
     return await prisma.merchant.findMany({
       where: {

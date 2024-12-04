@@ -46,6 +46,12 @@ class MarketController {
     createResponse(res, 200, "Market retrieved successfully", market);
   }
 
+  async getMarketBySlug(req: Request, res: Response, next: NextFunction) {
+    const { slug } = req.params;
+    const market = await this.marketService.getMarketBySlug(slug);
+    createResponse(res, 200, "Market retrieved successfully", market);
+  }
+
   async getMerchantsInMarket(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const merchants = await this.marketService.getMerchantsInMarket(
