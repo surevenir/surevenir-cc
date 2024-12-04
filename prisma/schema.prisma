@@ -33,6 +33,7 @@ model User {
   reviews   Review[]
   carts     Cart[]
   checkouts Checkout[]
+  favorites Favorite[]
 
   @@map("users")
 }
@@ -117,8 +118,22 @@ model Product {
   carts              Cart[]
   product_categories ProductCategory[]
   checkout_details   CheckoutDetails[]
+  favorites          Favorite[]
 
   @@map("products")
+}
+
+model Favorite {
+  id         Int      @id @unique @default(autoincrement())
+  user_id    String
+  product_id Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@map("favorites")
 }
 
 model Review {
