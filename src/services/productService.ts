@@ -377,7 +377,9 @@ class ProductService {
       LIMIT ${limit}
     `;
 
-    const productIds: number[] = (products as any).map((product: any) => product.id);
+    const productIds: number[] = (products as any).map(
+      (product: any) => product.id
+    );
     products = await prisma.product.findMany({
       where: {
         id: {
