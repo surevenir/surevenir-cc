@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8080
 
 # Jalankan aplikasi saat container mulai
-CMD ["node", "index.ts"]
+CMD ["node", "dist/index.js"]

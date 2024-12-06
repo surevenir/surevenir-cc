@@ -100,6 +100,9 @@ class MarketService {
       where: {
         slug,
       },
+      include: {
+        merchants: true, // Menyertakan relasi dengan merchants
+      },
     });
 
     if (!market) {

@@ -107,6 +107,23 @@ class MerchantService {
     return merchant;
   }
 
+  async getMerchantBySlug(slug: string) {
+    const merchant = await prisma.merchant.findFirst({
+      where: {
+        slug,
+      },
+      include: {
+        products: true,
+      },
+    });
+
+    if (!merchant) {
+      throw new ResponseError(404, "Merchant not found");
+    }
+
+    return merchant;
+  }
+
   async getProductsInMerchant(id: number) {
     let products = await prisma.product.findMany({
       where: {
