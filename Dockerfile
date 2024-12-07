@@ -8,13 +8,16 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install --production
 
 # Salin semua file aplikasi
 COPY . .
 
+# Generate Prisma Client
+RUN npx prisma generate
+
 # Expose port yang digunakan oleh aplikasi
-EXPOSE 8080
+EXPOSE 3000
 
 # Jalankan aplikasi saat container mulai
-CMD ["node", "index.ts"]
+CMD ["node", "dist/index.js"]
