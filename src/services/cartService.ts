@@ -324,6 +324,27 @@ class CartService {
     };
   }
 
+  // async getCheckouts(user: User) {
+  //   const checkouts = await prisma.checkout.findMany({
+  //     where: {
+  //       user_id: user.id,
+  //     },
+  //     include: {
+  //       checkout_details: {
+  //         include: {
+  //           product: {
+  //             include: {
+  //               merchant: true,
+  //             },
+  //           },
+  //         },
+  //       },
+  //     },
+  //   });
+
+  //   return checkouts;
+  // }
+
   async getCheckouts(user: User) {
     const checkouts = await prisma.checkout.findMany({
       where: {
@@ -341,6 +362,23 @@ class CartService {
         },
       },
     });
+
+    // Tambahkan images ke dalam setiap product di checkout_details
+    for (const checkout of checkouts) {
+      for (const detail of checkout.checkout_details) {
+        if (detail.product) {
+          const images = await prisma.images.findMany({
+            where: {
+              item_id: detail.product.id,
+              type: "product", // Filter untuk gambar produk
+            },
+          });
+
+          // Tambahkan properti images ke dalam product secara dinamis
+          (detail.product as any).images = images;
+        }
+      }
+    }
 
     return checkouts;
   }

@@ -183,6 +183,95 @@ class ProductService {
     return products;
   }
 
+  async getProductBySlug(slug: string, userId: string) {
+    // Ambil produk berdasarkan slug
+    const product = await prisma.product.findFirst({
+      where: {
+        slug, // mencari berdasarkan slug produk
+      },
+      include: {
+        merchant: {
+          select: {
+            id: true,
+            name: true,
+            market: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        product_categories: {
+          select: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!product) {
+      throw new ResponseError(404, "Product not found");
+    }
+
+    // Ambil gambar produk
+    const imagesUrl = await prisma.images.findMany({
+      where: {
+        item_id: product.id,
+        type: MediaType.PRODUCT, // hanya gambar dengan tipe 'product'
+      },
+    });
+
+    // Ambil status apakah produk adalah favorit dari user
+    const isFavorite = await prisma.favorite.findFirst({
+      where: {
+        product_id: product.id,
+        user_id: userId,
+      },
+    });
+
+    // Ambil review produk
+    const reviews = await prisma.review.findMany({
+      where: {
+        product_id: product.id,
+      },
+      include: {
+        user: true, // untuk informasi user yang memberi review
+      },
+    });
+
+    // Ambil gambar untuk setiap review
+    const reviewImages = await prisma.images.findMany({
+      where: {
+        item_id: {
+          in: reviews.map((review) => review.id),
+        },
+        type: MediaType.REVIEW, // hanya gambar dengan tipe 'review'
+      },
+    });
+
+    // Gabungkan gambar-gambar review dengan setiap review
+    const reviewsWithImages = reviews.map((review) => ({
+      ...review,
+      images: reviewImages
+        .filter((image) => image.item_id === review.id)
+        .map((image) => image.url),
+    }));
+
+    // Return produk dengan gambar, status favorit, dan review terkait
+    return {
+      ...product,
+      images: imagesUrl,
+      is_favorite: isFavorite ? true : false,
+      reviews: reviewsWithImages,
+    };
+  }
+
   async getProductReviews(id: number) {
     let reviews = await prisma.review.findMany({
       where: {
@@ -459,12 +548,40 @@ class ProductService {
     });
   }
 
-  async deleteProductFromFavorite(id: number) {
-    return await prisma.favorite.delete({
-      where: {
-        id,
-      },
-    });
+  // async deleteProductFromFavorite(id: number) {
+  //   return await prisma.favorite.delete({
+  //     where: {
+  //       id,
+  //     },
+  //   });
+  // }
+
+  async deleteProductFromFavorite(productId: number, userId: string) {
+    try {
+      // Mencari entri terlebih dahulu menggunakan findFirst
+      const favorite = await prisma.favorite.findFirst({
+        where: {
+          product_id: productId,
+          user_id: userId,
+        },
+      });
+
+      if (!favorite) {
+        throw new Error("Favorite not found.");
+      }
+
+      // Menghapus entri favorite yang ditemukan
+      const deletedFavorite = await prisma.favorite.delete({
+        where: {
+          id: favorite.id, // Menghapus berdasarkan ID yang ditemukan
+        },
+      });
+
+      return deletedFavorite;
+    } catch (error) {
+      console.error("Error deleting product from favorites:", error);
+      throw new Error("Could not delete product from favorites.");
+    }
   }
 }
 

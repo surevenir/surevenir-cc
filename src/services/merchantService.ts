@@ -121,7 +121,29 @@ class MerchantService {
       throw new ResponseError(404, "Merchant not found");
     }
 
-    return merchant;
+    const productImages = await prisma.images.findMany({
+      where: {
+        type: "product",
+        item_id: {
+          in: merchant.products.map((product) => product.id),
+        },
+      },
+    });
+
+    const productsWithImages = merchant.products.map((product) => {
+      const imagesForProduct = productImages.filter(
+        (image) => image.item_id === product.id
+      );
+      return {
+        ...product,
+        images: imagesForProduct,
+      };
+    });
+
+    return {
+      ...merchant,
+      products: productsWithImages,
+    };
   }
 
   async getProductsInMerchant(id: number) {
