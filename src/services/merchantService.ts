@@ -107,6 +107,45 @@ class MerchantService {
     return merchant;
   }
 
+  async getMerchantBySlug(slug: string) {
+    const merchant = await prisma.merchant.findFirst({
+      where: {
+        slug,
+      },
+      include: {
+        products: true,
+      },
+    });
+
+    if (!merchant) {
+      throw new ResponseError(404, "Merchant not found");
+    }
+
+    const productImages = await prisma.images.findMany({
+      where: {
+        type: "product",
+        item_id: {
+          in: merchant.products.map((product) => product.id),
+        },
+      },
+    });
+
+    const productsWithImages = merchant.products.map((product) => {
+      const imagesForProduct = productImages.filter(
+        (image) => image.item_id === product.id
+      );
+      return {
+        ...product,
+        images: imagesForProduct,
+      };
+    });
+
+    return {
+      ...merchant,
+      products: productsWithImages,
+    };
+  }
+
   async getProductsInMerchant(id: number) {
     let products = await prisma.product.findMany({
       where: {

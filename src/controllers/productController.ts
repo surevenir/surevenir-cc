@@ -64,6 +64,16 @@ class ProductController {
     createResponse(res, 200, "Product retrieved successfully", product);
   }
 
+  async getProductBySlug(req: Request, res: Response, next: NextFunction) {
+    const { slug } = req.params;
+    const { user_id } = req.query;
+    const product = await this.productService.getProductBySlug(
+      slug,
+      user_id as string
+    );
+    createResponse(res, 200, "product retrieved successfully", product);
+  }
+
   async getProductReviews(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const product = await this.productService.getProductReviews(parseInt(id));
@@ -123,7 +133,10 @@ class ProductController {
     next: NextFunction
   ) {
     const { id } = req.params;
-    await this.productService.deleteProductFromFavorite(parseInt(id));
+    await this.productService.deleteProductFromFavorite(
+      parseInt(id),
+      req.user!.id!
+    );
     createResponse(res, 200, "Product deleted from favorite successfully", {
       id,
     });

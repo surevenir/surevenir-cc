@@ -47,6 +47,12 @@ class MerchantController {
     createResponse(res, 200, "Merchant retrieved successfully", merchant);
   }
 
+  async getMerchantBySlug(req: Request, res: Response, next: NextFunction) {
+    const { slug } = req.params;
+    const merchant = await this.merchantService.getMerchantBySlug(slug);
+    createResponse(res, 200, "Merchant retrieved successfully", merchant);
+  }
+
   async getProductsInMerchant(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const products = await this.merchantService.getProductsInMerchant(
