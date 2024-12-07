@@ -34,6 +34,7 @@ model User {
   carts     Cart[]
   checkouts Checkout[]
   favorites Favorite[]
+  histories History[]
 
   @@map("users")
 }
@@ -214,9 +215,12 @@ model History {
   slug       String   @default(uuid())
   predict    String
   accuration Float
+  user_id    String
   image_url  String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("histories")
 }
