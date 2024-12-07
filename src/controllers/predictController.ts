@@ -12,17 +12,26 @@ class PredictController {
   }
 
   async predict(req: Request, res: Response, next: NextFunction) {
-    const prediction = await this.predictService.predict(req.user!.id!, req.file);
-    createResponse(res, 200, "Product prediction retrieved successfully", {
-      prediction,
-    });
+    const prediction = await this.predictService.predict(
+      req.user!.id!,
+      req.file
+    );
+    createResponse(
+      res,
+      200,
+      "Product prediction retrieved successfully",
+      prediction
+    );
   }
 
   async getUserHistories(req: Request, res: Response, next: NextFunction) {
     const histories = await this.predictService.getUserHistories(req.user!.id!);
-    createResponse(res, 200, "User predict histories retrieved successfully", {
-      histories,
-    });
+    createResponse(
+      res,
+      200,
+      "User predict histories retrieved successfully",
+      histories
+    );
   }
 }
 
