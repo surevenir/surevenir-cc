@@ -43,7 +43,7 @@ model Market {
   id                Int      @id @unique @default(autoincrement())
   slug              String   @default(uuid())
   name              String
-  description       String?
+  description       String?  @db.Text
   profile_image_url String?
   longitude         String?
   latitude          String?
@@ -60,7 +60,7 @@ model Merchant {
   slug              String   @default(uuid())
   name              String
   profile_image_url String?
-  description       String?
+  description       String?  @db.Text
   addresses         String?
   longitude         String?
   latitude          String?
@@ -79,7 +79,7 @@ model Merchant {
 model Category {
   id          Int      @id @unique @default(autoincrement())
   name        String   @unique
-  description String?
+  description String?  @db.Text
   image_url   String?
   range_price String?
   createdAt   DateTime @default(now())
@@ -107,7 +107,7 @@ model Product {
   id          Int      @id @unique @default(autoincrement())
   slug        String   @default(uuid())
   name        String
-  description String?
+  description String?  @db.Text
   price       Float
   merchant_id Int
   stock       Int
