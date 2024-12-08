@@ -4,6 +4,11 @@ import ResponseError from "../utils/responseError";
 import MediaService, { MediaType } from "./mediaService";
 import FormData from "form-data";
 
+type Prediction = {
+  result: string;
+  accuration: number;
+};
+
 class PredictService {
   mediaService: MediaService;
 
@@ -11,9 +16,9 @@ class PredictService {
     this.mediaService = new MediaService();
   }
 
-  async predict(userId: string, file: Express.Request["file"]) {
+  async predict(file: Express.Request["file"]) {
     if (!file) {
-      throw new Error("No file provided for prediction");
+      throw new ResponseError(400, "Image is required");
     }
 
     let prediction: AxiosResponse<any, any>;
@@ -42,16 +47,6 @@ class PredictService {
       throw new ResponseError(500, "Failed to predict");
     }
 
-    const mediaUrl = await this.mediaService.uploadMedia(file!);
-    await prisma.history.create({
-      data: {
-        user_id: userId,
-        image_url: mediaUrl,
-        predict: prediction.data.data.result,
-        accuration: prediction.data.data.accuration,
-      },
-    });
-
     const category = await prisma.category.findFirst({
       where: {
         name: prediction.data.data.result,
@@ -79,6 +74,7 @@ class PredictService {
           },
         },
       },
+      take: 10,
     });
 
     const imagesUrl = await prisma.images.findMany({
@@ -98,11 +94,26 @@ class PredictService {
     }));
 
     return {
-      image_url: mediaUrl,
-      prediction: prediction.data.data,
+      prediction: prediction.data.data as Prediction,
       category: category,
       related_products: relatedProducts,
     };
+  }
+
+  async createHistory(
+    userId: string,
+    file: Express.Request["file"],
+    prediction: Prediction
+  ) {
+    const mediaUrl = await this.mediaService.uploadMedia(file!);
+    await prisma.history.create({
+      data: {
+        user_id: userId,
+        image_url: mediaUrl,
+        predict: prediction.result,
+        accuration: prediction.accuration,
+      },
+    });
   }
 
   async getUserHistories(userId: string) {

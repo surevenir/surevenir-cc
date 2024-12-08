@@ -12,15 +12,12 @@ class PredictController {
   }
 
   async predict(req: Request, res: Response, next: NextFunction) {
-    const prediction = await this.predictService.predict(
+    const prediction = await this.predictService.predict(req.file);
+    createResponse(res, 200, "Prediction success", prediction);
+    this.predictService.createHistory(
       req.user!.id!,
-      req.file
-    );
-    createResponse(
-      res,
-      200,
-      "Product prediction retrieved successfully",
-      prediction
+      req.file,
+      prediction.prediction
     );
   }
 
