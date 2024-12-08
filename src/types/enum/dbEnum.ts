@@ -22,4 +22,10 @@ enum CheckoutStatus {
   COMPLETED = "COMPLETED",
 }
 
-export { Role, ImageType, Provider, CheckoutStatus };
+enum PubSubTopic {
+  REVIEW = "surevenir-review",
+  CHECKOUT = "surevenir-checkout",
+  UPDATE_CHECKOUT_STATUS = "surevenir-update-status-checkout",
+}
+
+export { Role, ImageType, Provider, CheckoutStatus, PubSubTopic };

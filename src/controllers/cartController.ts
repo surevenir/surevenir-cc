@@ -8,7 +8,8 @@ import {
 } from "../types/request/cartRequest";
 import Controller from "../utils/controllerDecorator";
 import CartService from "../services/cartService";
-import { CheckoutStatus } from "../types/enum/dbEnum";
+import { CheckoutStatus, PubSubTopic } from "../types/enum/dbEnum";
+import { publishMessage } from "../config/pubSubClient";
 
 @Controller
 class CartController {
@@ -63,6 +64,25 @@ class CartController {
     const data = CheckoutRequest.parse(req.body);
     const productIds = data.product_ids as number[];
     const result = await this.cartService.checkout(req.user!, productIds);
+
+    const message = `User ${req.user?.full_name} has checked out.`;
+    const attributes = {
+      eventType: "CHECKOUT",
+      source: "checkoutService",
+      userId: req.user?.id?.toString() || "unknown",
+      userName: req.user?.full_name || "unknown",
+      productIds: JSON.stringify(productIds),
+      priority: "high",
+      timestamp: new Date().toISOString(),
+    };
+
+    const messageId = await publishMessage(
+      message,
+      PubSubTopic.CHECKOUT,
+      attributes
+    );
+    console.log(`Pesan berhasil dikirim dengan ID: ${messageId}`);
+
     createResponse(res, 200, "Checkout successful", result);
   }
 
@@ -74,6 +94,26 @@ class CartController {
       parseInt(id),
       status
     );
+
+    const message = `Checkout status for order ID ${id} updated to ${status}.`;
+    const attributes = {
+      eventType: "CHECKOUT_STATUS_UPDATE",
+      source: "checkoutService",
+      userId: req.user?.id?.toString() || "unknown",
+      userName: req.user?.full_name || "unknown",
+      orderId: id,
+      newStatus: status,
+      priority: "normal",
+      timestamp: new Date().toISOString(),
+    };
+
+    const messageId = await publishMessage(
+      message,
+      PubSubTopic.UPDATE_CHECKOUT_STATUS,
+      attributes
+    );
+    console.log(`Pesan berhasil dikirim dengan ID: ${messageId}`);
+
     createResponse(res, 200, "Checkout status updated", result);
   }
 

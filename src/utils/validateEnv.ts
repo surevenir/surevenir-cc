@@ -44,6 +44,13 @@ const EnvSchema = z.object({
     })
     .url("Invalid URL format for ML_API_URL."),
 
+  PUB_SUB_SERVICE_ACCOUNT_PATH: z
+    .string({
+      description: "URL for Pub Sub Service Account",
+      required_error: "😱 PUB_SUB_SERVICE_ACCOUNT_PATH is required.",
+    })
+    .min(1, "PUB_SUB_SERVICE_ACCOUNT_PATH cannot be empty."),
+
   PORT: z.coerce
     .number({
       description: "Server port number, coerced from string to number",
