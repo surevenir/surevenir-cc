@@ -13,6 +13,7 @@ import "./types/global/authUser";
 import multer from "./middlewares/multer";
 import MediaService from "./services/mediaService";
 import prisma from "./config/database";
+import "./utils/validateEnv";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
