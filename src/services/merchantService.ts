@@ -80,17 +80,33 @@ class MerchantService {
       where: {
         type: "merchant",
         item_id: {
-          in: merchants.map((market) => market.id),
+          in: merchants.map((merchant) => merchant.id),
         },
       },
     });
 
-    const merchantsWithImages = merchants.map((market) => ({
-      ...market,
-      images: images.filter((image) => image.item_id === market.id),
+    const productCounts = await prisma.product.groupBy({
+      by: ["merchant_id"],
+      _count: {
+        id: true,
+      },
+    });
+
+    const productCountMap: Record<number, number> = productCounts.reduce(
+      (acc, item) => {
+        acc[item.merchant_id] = item._count.id;
+        return acc;
+      },
+      {} as Record<number, number>
+    );
+
+    const merchantsWithDetails = merchants.map((merchant) => ({
+      ...merchant,
+      images: images.filter((image) => image.item_id === merchant.id),
+      product_count: productCountMap[merchant.id] || 0,
     }));
 
-    return merchantsWithImages;
+    return merchantsWithDetails;
   }
 
   async getMerchantById(id: number) {
@@ -104,7 +120,24 @@ class MerchantService {
       throw new ResponseError(404, "Merchant not found");
     }
 
-    return merchant;
+    const productCount = await prisma.product.count({
+      where: {
+        merchant_id: id,
+      },
+    });
+
+    const images = await prisma.images.findMany({
+      where: {
+        type: "merchant",
+        item_id: id,
+      },
+    });
+
+    return {
+      ...merchant,
+      images,
+      product_count: productCount,
+    };
   }
 
   async getMerchantBySlug(slug: string) {
