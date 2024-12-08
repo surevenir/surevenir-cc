@@ -1,7 +1,7 @@
 import prisma from "../config/database";
-import { CheckoutStatus, ImageType } from "../types/enum/dbEnum";
+import { CheckoutStatus } from "../types/enum/dbEnum";
 import ResponseError from "../utils/responseError";
-import { Cart, CheckoutDetails, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { MediaType } from "./mediaService";
 
 class CartService {
@@ -245,50 +245,56 @@ class CartService {
     }, 0);
     console.log("totalPrice:", totalPrice);
 
-    const checkout = await prisma.checkout.create({
-      data: {
-        user_id: user.id,
-        total_price: totalPrice,
-        status: CheckoutStatus.PENDING,
-      },
-    });
-    console.log("checkout:", checkout);
+    let checkout: any;
+    let checkoutDetails: any[] = [];
 
-    const checkoutDetails = [];
-    for (const cart of cartWithProducts) {
-      checkoutDetails.push({
+    await prisma.$transaction(async (prisma) => {
+      // Create checkout
+      checkout = await prisma.checkout.create({
+        data: {
+          user_id: user.id,
+          total_price: totalPrice,
+          status: CheckoutStatus.PENDING,
+        },
+      });
+      console.log("checkout:", checkout);
+
+      // Prepare checkout details
+      checkoutDetails = cartWithProducts.map((cart) => ({
         product_id: cart.product_id,
         checkout_id: checkout.id,
         product_quantity: cart.quantity,
         product_subtotal: cart.product.price * cart.quantity,
         product_identity: cart.product.name + "-" + cart.product.merchant.name,
         product_price: cart.product.price,
+      }));
+      console.log("checkoutDetails:", checkoutDetails);
+
+      // Insert checkout details
+      await prisma.checkoutDetails.createMany({
+        data: checkoutDetails,
       });
-    }
-    console.log("checkoutDetails:", checkoutDetails);
 
-    await prisma.checkoutDetails.createMany({
-      data: checkoutDetails,
-    });
-
-    // update stock for each product
-    for (const cart of cartWithProducts) {
-      await prisma.product.update({
-        where: {
-          id: cart.product_id,
-        },
-        data: {
-          stock: {
-            decrement: cart.quantity,
+      // Update stock for each product
+      for (const cart of cartWithProducts) {
+        await prisma.product.update({
+          where: {
+            id: cart.product_id,
           },
+          data: {
+            stock: {
+              decrement: cart.quantity,
+            },
+          },
+        });
+      }
+
+      // Delete items from cart
+      await prisma.cart.deleteMany({
+        where: {
+          AND: [{ user_id: user.id }, { product_id: { in: productIds } }],
         },
       });
-    }
-
-    await prisma.cart.deleteMany({
-      where: {
-        AND: [{ user_id: user.id }, { product_id: { in: productIds } }],
-      },
     });
 
     return {
