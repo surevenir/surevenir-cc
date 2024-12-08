@@ -9,6 +9,7 @@ export default (
   const isSuccess: boolean = statucCode >= 200 && statucCode < 300;
 
   const body = {
+    from_cache: false,
     success: isSuccess,
     status_code: statucCode,
     message,
