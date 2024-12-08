@@ -3,7 +3,7 @@ import createResponse from "../utils/createResponse";
 import {
   CreateMerchantRequest,
   UpdateMerchantRequest,
-} from "../types/request/merchant";
+} from "../types/request/merchantRequest";
 import Controller from "../utils/controllerDecorator";
 import MerchantService from "../services/merchantService";
 

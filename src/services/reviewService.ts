@@ -2,7 +2,6 @@ import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
 import { Review, User } from "@prisma/client";
 import MediaService, { MediaData, MediaType } from "./mediaService";
-import { Checkout } from "../types/request/cart";
 import { CheckoutStatus } from "../types/enum/dbEnum";
 
 class ReviewService {

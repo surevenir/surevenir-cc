@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import createResponse from "../utils/createResponse";
-import { CreateUserRequest, UpdateUserRequest } from "../types/request/user";
+import { CreateUserRequest, UpdateUserRequest } from "../types/request/userRequest";
 import Controller from "../utils/controllerDecorator";
 import UserService from "../services/userService";
 

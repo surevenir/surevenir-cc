@@ -3,7 +3,7 @@ import createResponse from "../utils/createResponse";
 import {
   CreateReviewRequest,
   UpdateReviewRequest,
-} from "../types/request/review";
+} from "../types/request/reviewRequest";
 import Controller from "../utils/controllerDecorator";
 import ReviewService from "../services/reviewService";
 

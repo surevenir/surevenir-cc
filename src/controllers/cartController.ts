@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import createResponse from "../utils/createResponse";
 import {
-  AddProductsToCart,
-  UpdateProductInCart,
-  Checkout,
-  UpdateCheckoutStatus,
-} from "../types/request/cart";
+  AddProductsToCartRequest,
+  UpdateProductInCartRequest,
+  CheckoutRequest,
+  UpdateCheckoutStatusRequest,
+} from "../types/request/cartRequest";
 import Controller from "../utils/controllerDecorator";
 import CartService from "../services/cartService";
 import { CheckoutStatus } from "../types/enum/dbEnum";
@@ -19,7 +19,7 @@ class CartController {
   }
 
   async addproductToCart(req: Request, res: Response, next: NextFunction) {
-    const data = AddProductsToCart.parse(req.body);
+    const data = AddProductsToCartRequest.parse(req.body);
     const result = await this.cartService.addproductToCart(
       req.user!,
       data.product_id,
@@ -30,7 +30,7 @@ class CartController {
 
   async updateProductInCart(req: Request, res: Response, next: NextFunction) {
     const id = req.params.id;
-    const data = UpdateProductInCart.parse(req.body);
+    const data = UpdateProductInCartRequest.parse(req.body);
     const result = await this.cartService.updateProductInCart(
       req.user!,
       parseInt(id),
@@ -60,16 +60,16 @@ class CartController {
   }
 
   async checkout(req: Request, res: Response, next: NextFunction) {
-    Checkout.parse(req.body);
-    const productIds = req.body.product_ids as number[];
+    const data = CheckoutRequest.parse(req.body);
+    const productIds = data.product_ids as number[];
     const result = await this.cartService.checkout(req.user!, productIds);
     createResponse(res, 200, "Checkout successful", result);
   }
 
   async updateCheckoutStatus(req: Request, res: Response, next: NextFunction) {
-    UpdateCheckoutStatus.parse(req.body);
+    const data = UpdateCheckoutStatusRequest.parse(req.body);
     const { id } = req.params;
-    const status = req.body.status;
+    const status = data.status;
     const result = await this.cartService.updateCheckoutStatus(
       parseInt(id),
       status

@@ -3,7 +3,7 @@ import createResponse from "../utils/createResponse";
 import {
   CreateCategoryRequest,
   UpdateCategoryRequest,
-} from "../types/request/category";
+} from "../types/request/categoryRequest";
 import Controller from "../utils/controllerDecorator";
 import CategoryService from "../services/categoryService";
 

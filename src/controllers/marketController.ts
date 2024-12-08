@@ -3,7 +3,7 @@ import createResponse from "../utils/createResponse";
 import {
   CreateMarketRequest,
   UpdateMarketRequest,
-} from "../types/request/market";
+} from "../types/request/marketRequest";
 import Controller from "../utils/controllerDecorator";
 import MarketService from "../services/marketService";
 

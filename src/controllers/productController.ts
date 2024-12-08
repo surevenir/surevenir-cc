@@ -3,7 +3,7 @@ import createResponse from "../utils/createResponse";
 import {
   CreateProductRequest,
   UpdateProductRequest,
-} from "../types/request/product";
+} from "../types/request/productRequest";
 import Controller from "../utils/controllerDecorator";
 import ProductService from "../services/productService";
 
