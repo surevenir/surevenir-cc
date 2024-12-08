@@ -12,6 +12,7 @@ export default (
     success: isSuccess,
     status_code: statucCode,
     message,
+    timestamp: new Date().toISOString(),
     data,
   };
 

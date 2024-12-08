@@ -459,20 +459,29 @@ class ProductService {
   async getTopFavoritedProducts(limit: number) {
     let products = await prisma.$queryRaw`
       SELECT p.*, COUNT(f.product_id) as favorite_count
-      FROM product p
-      LEFT JOIN favorite f ON p.id = f.product_id
+      FROM products p
+      LEFT JOIN favorites f ON p.id = f.product_id
       GROUP BY p.id
       ORDER BY favorite_count DESC
       LIMIT ${limit}
     `;
 
-    const productIds: number[] = (products as any).map(
-      (product: any) => product.id
-    );
+    console.log(products);
+
+    const productIds: {
+      id: number;
+      favorite_count: number;
+    }[] = (products as any).map((product: any) => {
+      return {
+        id: product.id,
+        favorite_count: parseInt(product.favorite_count),
+      };
+    });
+
     products = await prisma.product.findMany({
       where: {
         id: {
-          in: productIds,
+          in: productIds.map((p) => p.id),
         },
       },
       include: {
@@ -504,7 +513,64 @@ class ProductService {
     const imagesUrl = await prisma.images.findMany({
       where: {
         item_id: {
-          in: productIds,
+          in: productIds.map((p) => p.id),
+        },
+        type: MediaType.PRODUCT,
+      },
+    });
+
+    products = (products as any).map((product: any) => ({
+      ...product,
+      images: imagesUrl.filter((image) => image.item_id === product.id),
+      favorite_count:
+        productIds?.find((p) => p.id === product.id)?.favorite_count || 0,
+    }));
+
+    (products as any).sort(
+      (a: any, b: any) => b.favorite_count - a.favorite_count
+    );
+
+    return products;
+  }
+  async getFavoritedProducts(userId: string) {
+    let products = await prisma.favorite.findMany({
+      where: {
+        user_id: userId,
+      },
+      include: {
+        product: {
+          include: {
+            merchant: {
+              select: {
+                id: true,
+                name: true,
+                market: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+            product_categories: {
+              select: {
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const imagesUrl = await prisma.images.findMany({
+      where: {
+        item_id: {
+          in: products.map((product) => product.product_id),
         },
         type: MediaType.PRODUCT,
       },
@@ -519,16 +585,6 @@ class ProductService {
   }
 
   async addProductToFavorite(productId: number, userId: string) {
-    const existingProduct = await prisma.product.findFirst({
-      where: {
-        id: productId,
-      },
-    });
-
-    if (!existingProduct) {
-      throw new ResponseError(404, "Product not found");
-    }
-
     const existingFavorite = await prisma.favorite.findFirst({
       where: {
         product_id: productId,
@@ -548,40 +604,17 @@ class ProductService {
     });
   }
 
-  // async deleteProductFromFavorite(id: number) {
-  //   return await prisma.favorite.delete({
-  //     where: {
-  //       id,
-  //     },
-  //   });
-  // }
-
   async deleteProductFromFavorite(productId: number, userId: string) {
-    try {
-      // Mencari entri terlebih dahulu menggunakan findFirst
-      const favorite = await prisma.favorite.findFirst({
-        where: {
-          product_id: productId,
-          user_id: userId,
-        },
-      });
+    await prisma.favorite.deleteMany({
+      where: {
+        product_id: productId,
+        user_id: userId,
+      },
+    });
 
-      if (!favorite) {
-        throw new Error("Favorite not found.");
-      }
-
-      // Menghapus entri favorite yang ditemukan
-      const deletedFavorite = await prisma.favorite.delete({
-        where: {
-          id: favorite.id, // Menghapus berdasarkan ID yang ditemukan
-        },
-      });
-
-      return deletedFavorite;
-    } catch (error) {
-      console.error("Error deleting product from favorites:", error);
-      throw new Error("Could not delete product from favorites.");
-    }
+    return {
+      product_id: productId,
+    };
   }
 }
 

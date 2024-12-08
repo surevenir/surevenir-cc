@@ -116,6 +116,19 @@ class ProductController {
     createResponse(res, 200, "Top favorited products retrieved successfully", {
       products,
     });
+  
+  }
+  async getFavoritedProducts(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const products = await this.productService.getFavoritedProducts(
+      req.user!.id!
+    );
+    createResponse(res, 200, "Top favorited products retrieved successfully", {
+      products,
+    });
   }
 
   async addProductToFavorite(req: Request, res: Response, next: NextFunction) {
@@ -124,7 +137,7 @@ class ProductController {
       parseInt(id),
       req.user!.id!
     );
-    createResponse(res, 200, "Product images added successfully", product);
+    createResponse(res, 200, "Add product to favorite success", product);
   }
 
   async deleteProductFromFavorite(

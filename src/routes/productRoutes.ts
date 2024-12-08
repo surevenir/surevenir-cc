@@ -12,6 +12,16 @@ productRouter.get(
   authenticate,
   ProductController.getProductBySlug
 );
+productRouter.get(
+  "/top-favorites",
+  authenticate,
+  ProductController.getTopFavoritedProducts
+);
+productRouter.get(
+  "/favorites",
+  authenticate,
+  ProductController.getFavoritedProducts
+);
 productRouter.get("/:id", authenticate, ProductController.getProductById);
 productRouter.get(
   "/:id/reviews",
@@ -24,11 +34,6 @@ productRouter.post(
   authorizeAdmin,
   multer.array("images", 10),
   ProductController.addProductImages
-);
-productRouter.post(
-  "/top-favorites",
-  authenticate,
-  ProductController.getTopFavoritedProducts
 );
 productRouter.post(
   "/:id/favorites",

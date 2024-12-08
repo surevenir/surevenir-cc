@@ -67,17 +67,6 @@ class CartService {
   }
 
   async updateProductInCart(user: User, cartId: number, quantity: number) {
-    const existingCart = await prisma.cart.findFirst({
-      where: {
-        id: cartId,
-        user_id: user.id,
-      },
-    });
-
-    if (!existingCart) {
-      throw new ResponseError(404, "Cart not found");
-    }
-
     // if quantity is 0, delete cart
     if (quantity === 0) {
       await prisma.cart.delete({
