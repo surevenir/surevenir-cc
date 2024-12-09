@@ -11,6 +11,15 @@ predictRouter.post(
   multer.single("image"),
   predictController.predict
 );
-predictRouter.get("/histories/me", authenticate, predictController.getUserHistories);
+predictRouter.get(
+  "/histories/me",
+  authenticate,
+  predictController.getUserHistories
+);
+predictRouter.delete(
+  "/history/:id",
+  authenticate,
+  predictController.deleteHistory
+);
 
 export default predictRouter;

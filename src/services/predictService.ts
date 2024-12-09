@@ -131,6 +131,44 @@ class PredictService {
 
     return result;
   }
+
+  async deleteHistoryById(id: number) {
+    const existingHistory = await prisma.history.findFirst({
+      where: {
+        id,
+      },
+    });
+
+    if (!existingHistory) {
+      throw new ResponseError(404, "History not found");
+    }
+
+    try {
+      if (existingHistory.image_url) {
+        await this.mediaService.deleteMediaFromGCSByUrl(
+          existingHistory.image_url
+        );
+      }
+
+      console.log("Media for history deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting media for history:", error);
+      throw new ResponseError(500, "Failed to delete media for history");
+    }
+
+    try {
+      const deletedHistory = await prisma.history.delete({
+        where: {
+          id,
+        },
+      });
+      console.log("History deleted successfully:", deletedHistory);
+      return deletedHistory;
+    } catch (error) {
+      console.error("Error deleting history:", error);
+      throw new ResponseError(500, "Failed to delete history");
+    }
+  }
 }
 
 export default PredictService;

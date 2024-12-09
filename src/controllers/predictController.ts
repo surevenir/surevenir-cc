@@ -30,6 +30,12 @@ class PredictController {
       histories
     );
   }
+
+  async deleteHistory(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    await this.predictService.deleteHistoryById(parseInt(id));
+    createResponse(res, 200, "History deleted successfully", { id });
+  }
 }
 
 export default new PredictController();
