@@ -194,6 +194,8 @@ class ProductService {
           select: {
             id: true,
             name: true,
+            slug: true,
+            profile_image_url: true,
             market: {
               select: {
                 id: true,
