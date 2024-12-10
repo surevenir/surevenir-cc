@@ -71,6 +71,39 @@ app.get("/api/count", async (req: Request, res: Response) => {
   }
 });
 
+let clients: any = [];
+
+app.get("/events", (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  clients.push(res);
+
+  req.on("close", () => {
+    clients = clients.filter((client: any) => client !== res);
+  });
+
+  req.on("error", (err) => {
+    console.error("Connection error:", err);
+  });
+});
+
+app.post("/pubsub-handler", (req, res) => {
+  const message = req.body?.message;
+
+  if (message?.data) {
+    const data = Buffer.from(message.data, "base64").toString("utf-8");
+    console.log(`Received message: ${data}`);
+
+    clients.forEach((client: any) => client.write(`data: ${data}\n\n`));
+  } else {
+    console.error("Invalid message format");
+  }
+
+  res.status(200).send();
+});
+
 app.use(errorHandler as any);
 
 app.listen(PORT, () => {
