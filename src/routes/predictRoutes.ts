@@ -5,6 +5,11 @@ import predictController from "../controllers/predictController";
 
 const predictRouter = express.Router();
 
+predictRouter.get(
+  "/top-scanner",
+  authenticate,
+  predictController.getTopScanner
+);
 predictRouter.post(
   "/",
   authenticate,

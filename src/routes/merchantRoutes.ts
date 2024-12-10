@@ -7,6 +7,11 @@ import multer from "../middlewares/multer";
 const merchantRouter = express.Router();
 
 merchantRouter.get("/", authenticate, MerchantController.getAllMerchants);
+merchantRouter.get(
+  "/by/owner",
+  authenticate,
+  MerchantController.getAllMerchantsByOwner
+);
 merchantRouter.get("/:id", authenticate, MerchantController.getMerchantById);
 merchantRouter.get(
   "/slug/:slug",

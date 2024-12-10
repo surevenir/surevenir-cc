@@ -17,12 +17,23 @@ import "./utils/validateEnv";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+const FRONTEND_URL = process.env.FRONTEND_URL || "";
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, TypeScript with Express!");
 });
 
 app.use(express.json());
+
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", FRONTEND_URL);
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
 
 app.use("/api/users", userRoutes);
 app.use("/api/markets", marketRoutes);

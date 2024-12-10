@@ -49,6 +49,18 @@ class PredictController {
   }
 
   /**
+   * Retrieves the top scanner data.
+   * @param req The incoming request object.
+   * @param res The response object to send the result.
+   * @param next The next function to call in the middleware chain.
+   * @returns A Promise that resolves to an object containing the top scanner information.
+   */
+  async getTopScanner(req: Request, res: Response, next: NextFunction) {
+    const topScanner = await this.predictService.getTopScanner();
+    createResponse(res, 200, "Top scanner retrieved successfully", topScanner);
+  }
+
+  /**
    * Deletes a predict history for a user.
    * @param req The request containing the id of the history to delete in the params.
    * @param res The response to send the result.

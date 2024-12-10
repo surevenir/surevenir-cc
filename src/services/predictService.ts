@@ -159,6 +159,40 @@ class PredictService {
   }
 
   /**
+   * Retrieves the top scanner data.
+   * @returns A Promise that resolves to an array of objects, each containing the user ID, user name, email, profile image URL, history count and points.
+   * The array is sorted by the history count in descending order.
+   */
+  async getTopScanner() {
+    const result = await prisma.$queryRaw<
+      {
+        user_id: string;
+        user_name: string;
+        history_count: bigint;
+      }[]
+    >`
+      SELECT 
+        u.id as user_id,
+        COALESCE(u.full_name, 'Unknown') as user_name,
+        COALESCE(u.email, 'Unknown') as email,
+        COALESCE(u.profile_image_url, 'Unknown') as profile_image_url,
+        COUNT(h.id) as history_count
+      FROM histories h
+      JOIN users u ON h.user_id = u.id
+      GROUP BY u.id, u.full_name
+      ORDER BY history_count DESC
+    `;
+
+    const processedResult = result.map((row) => ({
+      ...row,
+      history_count: Number(row.history_count),
+      points: Number(row.history_count) * 100,
+    }));
+
+    return processedResult;
+  }
+
+  /**
    * Deletes a predict history by its ID.
    * @param id The ID of the history to delete.
    * @returns A Promise that resolves to the deleted history object.

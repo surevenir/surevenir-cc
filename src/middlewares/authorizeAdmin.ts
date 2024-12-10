@@ -16,7 +16,7 @@ import { Role } from "../types/enum/dbEnum";
  */
 export default async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (req.user?.role !== Role.ADMIN) {
+    if (req.user?.role !== Role.ADMIN && req.user?.role !== Role.MERCHANT) {
       throw new ResponseError(
         403,
         `Forbidden, you don't have permission to access this resource`

@@ -1,6 +1,6 @@
 import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
-import { Merchant } from "@prisma/client";
+import { Merchant, User } from "@prisma/client";
 import MediaService, { MediaData, MediaType } from "./mediaService";
 
 class MerchantService {
@@ -98,6 +98,52 @@ class MerchantService {
    */
   async getAllMerchants() {
     const merchants = await prisma.merchant.findMany();
+
+    const images = await prisma.images.findMany({
+      where: {
+        type: "merchant",
+        item_id: {
+          in: merchants.map((merchant) => merchant.id),
+        },
+      },
+    });
+
+    const productCounts = await prisma.product.groupBy({
+      by: ["merchant_id"],
+      _count: {
+        id: true,
+      },
+    });
+
+    const productCountMap: Record<number, number> = productCounts.reduce(
+      (acc, item) => {
+        acc[item.merchant_id] = item._count.id;
+        return acc;
+      },
+      {} as Record<number, number>
+    );
+
+    const merchantsWithDetails = merchants.map((merchant) => ({
+      ...merchant,
+      images: images.filter((image) => image.item_id === merchant.id),
+      product_count: productCountMap[merchant.id] || 0,
+    }));
+
+    return merchantsWithDetails;
+  }
+
+  /**
+   * Retrieves all merchants owned by the specified user, along with their associated images and product counts.
+   * @param user - The user whose merchants are being retrieved.
+   * @returns A Promise that resolves to an array of merchants owned by the user, each with an array of associated images
+   * and a count of the products they offer.
+   */
+  async getAllMerchantsByOwner(user: User) {
+    const merchants = await prisma.merchant.findMany({
+      where: {
+        user_id: user.id,
+      },
+    });
 
     const images = await prisma.images.findMany({
       where: {

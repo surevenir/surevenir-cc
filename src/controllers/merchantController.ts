@@ -65,6 +65,17 @@ class MerchantController {
     createResponse(res, 200, "Merchants retrieved successfully", merchants);
   }
 
+  async getAllMerchantsByOwner(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const merchants = await this.merchantService.getAllMerchantsByOwner(
+      req.user!
+    );
+    createResponse(res, 200, "Merchants retrieved successfully", merchants);
+  }
+
   /**
    * Retrieves a merchant by its ID.
    * @param req - The request object containing the merchant ID as a parameter.
