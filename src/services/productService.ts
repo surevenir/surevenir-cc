@@ -1,6 +1,6 @@
 import prisma from "../config/database";
 import ResponseError from "../utils/responseError";
-import { Product } from "@prisma/client";
+import { Product, User } from "@prisma/client";
 import MediaService, { MediaData, MediaType } from "./mediaService";
 
 class ProductService {
@@ -164,6 +164,88 @@ class ProductService {
               },
             }
           : undefined,
+      orderBy: { [sortOption.column]: sortOption.direction },
+      include: {
+        merchant: {
+          select: {
+            id: true,
+            name: true,
+            market: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        product_categories: {
+          select: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const imagesUrl = await prisma.images.findMany({
+      where: {
+        item_id: {
+          in: products.map((product) => product.id),
+        },
+        type: MediaType.PRODUCT,
+      },
+    });
+
+    products = products.map((product) => ({
+      ...product,
+      images: imagesUrl.filter((image) => image.item_id === product.id),
+    }));
+
+    return products;
+  }
+
+  /**
+   * Retrieves all products owned by the specified user, sorted by the specified
+   * column in the specified direction, and filtered by the specified category.
+   * @param sort_by - The column to sort by. Can be "newest", "oldest", "price_asc", or "price_desc". Defaults to "newest".
+   * @param category - The category of products to retrieve. If not specified, all products are retrieved.
+   * @param user - The user whose products are being retrieved.
+   * @returns A Promise that resolves to an array of products, each with their associated merchant, categories, and images.
+   */
+  async getAllProductsByOwner(sort_by: string, category: string, user: User) {
+    const sortOptions: Record<
+      string,
+      { column: string; direction: "asc" | "desc" }
+    > = {
+      newest: { column: "createdAt", direction: "desc" },
+      oldest: { column: "createdAt", direction: "asc" },
+      price_asc: { column: "price", direction: "asc" },
+      price_desc: { column: "price", direction: "desc" },
+    };
+
+    const sortOption = sortOptions[sort_by] || sortOptions.newest;
+
+    let products = await prisma.product.findMany({
+      where: {
+        merchant: {
+          user_id: user.id,
+        },
+        ...(category !== "all"
+          ? {
+              product_categories: {
+                some: {
+                  category: {
+                    name: category,
+                  },
+                },
+              },
+            }
+          : {}),
+      },
       orderBy: { [sortOption.column]: sortOption.direction },
       include: {
         merchant: {

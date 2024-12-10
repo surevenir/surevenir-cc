@@ -97,6 +97,25 @@ class ProductController {
   }
 
   /**
+   * Retrieves all products created by the owner of the request.
+   * @param req Request object containing query parameters of `sort_by` and `category`.
+   * @param res Response object to send the response.
+   * @param next NextFunction object to call the next middleware.
+   * @returns A Promise that resolves to an array of products created by the owner of the request.
+   */
+  async getAllProductsByOwner(req: Request, res: Response, next: NextFunction) {
+    const { sort_by = "newest", category = "all" } = req.query;
+
+    const product = await this.productService.getAllProductsByOwner(
+      sort_by as string,
+      category as string,
+      req.user!
+    );
+
+    createResponse(res, 200, "Product retrieved successfully", product);
+  }
+
+  /**
    * Retrieves a product by its slug.
    * @param req Request object containing the product slug as a parameter and optionally a user_id as a query.
    * @param res Response object to send the response.

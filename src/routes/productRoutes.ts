@@ -24,6 +24,11 @@ productRouter.get(
 );
 productRouter.get("/:id", authenticate, ProductController.getProductById);
 productRouter.get(
+  "/by/owner",
+  authenticate,
+  ProductController.getAllProductsByOwner
+);
+productRouter.get(
   "/:id/reviews",
   authenticate,
   ProductController.getProductReviews
