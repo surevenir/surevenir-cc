@@ -6,10 +6,20 @@ import MediaService, { MediaData, MediaType } from "./mediaService";
 class MarketService {
   private mediaService: MediaService;
 
+  /**
+   * Initializes a new instance of the MarketService class.
+   * Sets up the mediaService for handling media-related operations.
+   */
   constructor() {
     this.mediaService = new MediaService();
   }
 
+  /**
+   * Creates a new market.
+   * @param market The market to be created.
+   * @param file The file to be uploaded as the market's profile image.
+   * @returns The created market.
+   */
   async createMarket(market: Market, file: Express.Request["file"]) {
     if (file) {
       const mediaUrl = await this.mediaService.uploadMedia(file);
@@ -21,6 +31,12 @@ class MarketService {
     });
   }
 
+  /**
+   * Adds images to a market.
+   * @param marketId The ID of the market to be updated.
+   * @param files The files to be uploaded as images.
+   * @returns The created media data.
+   */
   async addMarketImages(marketId: number, files: Express.Request["files"]) {
     const existingMarket = await prisma.market.findFirst({
       where: {
@@ -51,6 +67,10 @@ class MarketService {
     return mediaData;
   }
 
+  /**
+   * Retrieves all markets along with their associated images.
+   * @returns A Promise that resolves to an array of markets, each with an array of associated images.
+   */
   async getAllMarkets() {
     const markets = await prisma.market.findMany();
 
@@ -71,6 +91,12 @@ class MarketService {
     return marketsWithImages;
   }
 
+  /**
+   * Retrieves a market by its ID along with associated images.
+   * @param id - The unique identifier of the market to retrieve.
+   * @returns A Promise that resolves to an object containing the market and its images.
+   * @throws ResponseError if the market is not found.
+   */
   async getMarketById(id: number) {
     const market = await prisma.market.findUnique({
       where: {
@@ -95,13 +121,19 @@ class MarketService {
     };
   }
 
+  /**
+   * Retrieves a market by its slug along with associated images and merchants.
+   * @param slug The slug of the market to retrieve.
+   * @returns A Promise that resolves to an object containing the market, its images, and its merchants.
+   * @throws ResponseError if the market is not found.
+   */
   async getMarketBySlug(slug: string) {
     const market = await prisma.market.findFirst({
       where: {
         slug,
       },
       include: {
-        merchants: true, // Menyertakan relasi dengan merchants
+        merchants: true,
       },
     });
 
@@ -122,6 +154,11 @@ class MarketService {
     };
   }
 
+  /**
+   * Retrieves a list of merchants in a specified market.
+   * @param id - The unique identifier of the market.
+   * @returns A Promise that resolves to an array of merchants in the specified market.
+   */
   async getMerchantsInMarket(id: number) {
     return await prisma.merchant.findMany({
       where: {
@@ -130,6 +167,13 @@ class MarketService {
     });
   }
 
+  /**
+   * Updates a market by its ID.
+   * @param market The market with the values to be updated.
+   * @param file The file to be uploaded as the market's profile image.
+   * @returns The updated market.
+   * @throws ResponseError if the market is not found.
+   */
   async updateMarket(market: Market, file: Express.Multer.File | undefined) {
     const existingMarket = await prisma.market.findFirst({
       where: {
@@ -159,6 +203,12 @@ class MarketService {
     });
   }
 
+  /**
+   * Deletes a market by its ID.
+   * @param id - The unique identifier of the market to be deleted.
+   * @returns A Promise that resolves to the deleted market.
+   * @throws ResponseError if the market is not found.
+   */
   async deleteMarketById(id: number) {
     const existingMarket = await prisma.market.findFirst({
       where: {

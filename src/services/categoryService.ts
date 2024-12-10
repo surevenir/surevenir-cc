@@ -6,10 +6,20 @@ import MediaService from "./mediaService";
 class CategoryService {
   private mediaService: MediaService;
 
+  /**
+   * Initializes a new instance of the CategoryService class.
+   * Sets up the mediaService for handling media-related operations.
+   */
   constructor() {
     this.mediaService = new MediaService();
   }
 
+  /**
+   * Creates a new category.
+   * @param category The category to create.
+   * @param file The image to upload as a category image.
+   * @returns The created category.
+   */
   async createCategory(category: Category, file: Express.Request["file"]) {
     if (file) {
       const mediaUrl = await this.mediaService.uploadMedia(file);
@@ -21,10 +31,20 @@ class CategoryService {
     });
   }
 
+  /**
+   * Retrieves all categories.
+   * @returns An array of categories.
+   */
   async getAllCategories() {
     return await prisma.category.findMany();
   }
 
+  /**
+   * Retrieves a category by its ID.
+   * @param id The ID of the category to retrieve.
+   * @returns The category with the specified ID.
+   * @throws ResponseError if the category is not found.
+   */
   async getCategoryById(id: number) {
     const category = await prisma.category.findUnique({
       where: {
@@ -39,6 +59,13 @@ class CategoryService {
     return category;
   }
 
+  /**
+   * Updates an existing category by its ID.
+   * @param category The category object containing updated information.
+   * @param file An optional file to update the category's image.
+   * @returns The updated category.
+   * @throws ResponseError if the category is not found.
+   */
   async updateCategory(
     category: Category,
     file: Express.Multer.File | undefined
@@ -71,6 +98,12 @@ class CategoryService {
     });
   }
 
+  /**
+   * Deletes a category by its ID.
+   * @param id The ID of the category to delete.
+   * @returns The deleted category.
+   * @throws ResponseError if the category is not found.
+   */
   async deleteCategoryById(id: number) {
     const existingCategory = await prisma.category.findFirst({
       where: {

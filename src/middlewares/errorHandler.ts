@@ -3,6 +3,15 @@ import { Prisma } from "@prisma/client";
 import ResponseError from "../utils/responseError";
 import { z } from "zod";
 
+/**
+ * The error handler middleware function.
+ * @param err The error object to handle.
+ * @param req The request object.
+ * @param res The response object.
+ * @param next The next middleware function.
+ * @returns The response object.
+ * @throws Will throw if the error is not handled.
+ */
 export default function errorHandler(
   err: unknown,
   req: Request,
@@ -30,13 +39,19 @@ export default function errorHandler(
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     switch (err.code) {
       case "P2002":
-        message = `Duplicate field value: ${(err.meta?.target as string) || "Unknown target"}`;
+        message = `Duplicate field value: ${
+          (err.meta?.target as string) || "Unknown target"
+        }`;
         break;
       case "P2014":
-        message = `Invalid ID: ${(err.meta?.target as string) || "Unknown target"}`;
+        message = `Invalid ID: ${
+          (err.meta?.target as string) || "Unknown target"
+        }`;
         break;
       case "P2003":
-        message = `Invalid input data: ${(err.meta?.target as string) || "Unknown target"}`;
+        message = `Invalid input data: ${
+          (err.meta?.target as string) || "Unknown target"
+        }`;
         break;
       default:
         message = "Database request error";

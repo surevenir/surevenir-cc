@@ -11,10 +11,21 @@ import ProductService from "../services/productService";
 class ProductController {
   private productService: ProductService;
 
+  /**
+   * Initializes a new instance of the ProductController class.
+   * Sets up the productService for handling product-related operations.
+   */
   constructor() {
     this.productService = new ProductService();
   }
 
+  /**
+   * Creates a new product.
+   * @param req Request object containing the request body and files.
+   * @param res Response object to send the response.
+   * @param next NextFunction object to call the next middleware.
+   * @returns A Promise that resolves to the created product.
+   */
   async createProduct(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateProductRequest.parse(req.body);
     const categoryIds = data.category_ids
@@ -35,6 +46,13 @@ class ProductController {
     createResponse(res, 201, "Product created successfully", product);
   }
 
+  /**
+   * Adds images to a specified product.
+   * @param req Request object containing the product ID as a parameter and the images as files.
+   * @param res Response object to send the response.
+   * @param next NextFunction object to call the next middleware.
+   * @returns A Promise that resolves when images are added successfully and the response is sent.
+   */
   async addProductImages(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const product = await this.productService.addProductImages(
@@ -44,6 +62,13 @@ class ProductController {
     createResponse(res, 200, "Product images added successfully", product);
   }
 
+  /**
+   * Retrieves a product by ID.
+   * @param req Request object containing the product ID as a parameter.
+   * @param res Response object to send the response.
+   * @param next NextFunction object to call the next middleware.
+   * @returns A Promise that resolves to the product with the specified ID.
+   */
   async getProductById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const product = await this.productService.getProductById(
@@ -53,6 +78,13 @@ class ProductController {
     createResponse(res, 200, "Product retrieved successfully", product);
   }
 
+  /**
+   * Retrieves all products.
+   * @param req Request object containing query parameters of `sort_by` and `category`.
+   * @param res Response object to send the response.
+   * @param next NextFunction object to call the next middleware.
+   * @returns A Promise that resolves to an array of products.
+   */
   async getAllProducts(req: Request, res: Response, next: NextFunction) {
     const { sort_by = "newest", category = "all" } = req.query;
 
@@ -64,6 +96,13 @@ class ProductController {
     createResponse(res, 200, "Product retrieved successfully", product);
   }
 
+  /**
+   * Retrieves a product by its slug.
+   * @param req Request object containing the product slug as a parameter and optionally a user_id as a query.
+   * @param res Response object to send the response.
+   * @param next NextFunction object to call the next middleware.
+   * @returns A Promise that resolves to the product with the specified slug.
+   */
   async getProductBySlug(req: Request, res: Response, next: NextFunction) {
     const { slug } = req.params;
     const { user_id } = req.query;
@@ -74,12 +113,26 @@ class ProductController {
     createResponse(res, 200, "product retrieved successfully", product);
   }
 
+  /**
+   * Retrieves all reviews of a product by its ID.
+   * @param req Request object containing the product ID as a parameter.
+   * @param res Response object to send the response.
+   * @param next NextFunction object to call the next middleware.
+   * @returns A Promise that resolves to an array of reviews of the product with the specified ID.
+   */
   async getProductReviews(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const product = await this.productService.getProductReviews(parseInt(id));
     createResponse(res, 200, "Product reviews retrieved successfully", product);
   }
 
+  /**
+   * Updates a product by its ID.
+   * @param req Request object containing the product ID as a parameter, the updated data in the body, and the images as files.
+   * @param res Response object to send the response.
+   * @param next NextFunction object to call the next middleware.
+   * @returns A Promise that resolves to the updated product.
+   */
   async updateProduct(req: Request, res: Response, next: NextFunction) {
     let { id } = req.params;
     const data: any = UpdateProductRequest.parse(req.body);
@@ -98,12 +151,26 @@ class ProductController {
     createResponse(res, 200, "Product updated successfully", product);
   }
 
+  /**
+   * Deletes a product by its ID.
+   * @param req Request object containing the product ID as a parameter.
+   * @param res Response object to send the response.
+   * @param next NextFunction object to call the next middleware.
+   * @returns A Promise that resolves to an object with the deleted product ID.
+   */
   async deleteProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     await this.productService.deleteProductById(parseInt(id));
     createResponse(res, 200, "Product deleted successfully", { id });
   }
 
+  /**
+   * Retrieves the top favorited products with the specified limit.
+   * @param req Request object containing the limit as a query parameter.
+   * @param res Response object to send the response.
+   * @param next NextFunction object to call the next middleware.
+   * @returns A Promise that resolves to an object containing the top favorited products.
+   */
   async getTopFavoritedProducts(
     req: Request,
     res: Response,
@@ -116,13 +183,16 @@ class ProductController {
     createResponse(res, 200, "Top favorited products retrieved successfully", {
       products,
     });
-  
   }
-  async getFavoritedProducts(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+
+  /**
+   * Retrieves the products favorited by the user.
+   * @param req Request object containing the user object.
+   * @param res Response object to send the response.
+   * @param next NextFunction object to call the next middleware.
+   * @returns A Promise that resolves to an object containing the favorited products.
+   */
+  async getFavoritedProducts(req: Request, res: Response, next: NextFunction) {
     const products = await this.productService.getFavoritedProducts(
       req.user!.id!
     );
@@ -131,6 +201,13 @@ class ProductController {
     });
   }
 
+  /**
+   * Adds a product to the user's list of favorite products.
+   * @param req Request object containing the product ID as a parameter.
+   * @param res Response object to send the response.
+   * @param next NextFunction object to call the next middleware.
+   * @returns A Promise that resolves to the added favorite product.
+   */
   async addProductToFavorite(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const product = await this.productService.addProductToFavorite(
@@ -140,6 +217,13 @@ class ProductController {
     createResponse(res, 200, "Add product to favorite success", product);
   }
 
+  /**
+   * Deletes a product from the user's list of favorite products.
+   * @param req Request object containing the product ID as a parameter.
+   * @param res Response object to send the response.
+   * @param next NextFunction object to call the next middleware.
+   * @returns A Promise that resolves to an object with the deleted product ID.
+   */
   async deleteProductFromFavorite(
     req: Request,
     res: Response,

@@ -6,10 +6,23 @@ import MediaService, { MediaData, MediaType } from "./mediaService";
 class ProductService {
   private mediaService: MediaService;
 
+  /**
+   * Constructor for the ProductService class.
+   * Initializes the MediaService instance which is used to
+   * interact with the media table in the database.
+   */
   constructor() {
     this.mediaService = new MediaService();
   }
 
+  /**
+   * Creates a new product.
+   * @param product The product to be created.
+   * @param categoryIds The category IDs to associate with the product.
+   * @param files The files to be uploaded as product images.
+   * @returns The created product with its associated categories and images.
+   * @throws ResponseError if the merchant is not found, or if any of the categories are not found.
+   */
   async createProduct(
     product: Product,
     categoryIds: number[],
@@ -56,6 +69,13 @@ class ProductService {
     };
   }
 
+  /**
+   * Retrieves a product by its ID, including its merchant, categories, images, and favorite status for a user.
+   * @param id - The ID of the product to retrieve.
+   * @param userId - The ID of the user to check if the product is in their favorites.
+   * @returns A Promise that resolves to the product with its associated merchant, categories, images, and favorite status.
+   * @throws ResponseError if the product is not found.
+   */
   async getProductById(id: number, userId: string) {
     const product = await prisma.product.findUnique({
       where: {
@@ -112,6 +132,12 @@ class ProductService {
     };
   }
 
+  /**
+   * Retrieves all products, with options to sort by creation date or price, and to filter by category.
+   * @param sort_by - The column to sort by. Options are "newest", "oldest", "price_asc", and "price_desc". Defaults to "newest" if not specified.
+   * @param category - The name of the category to filter by. If not specified, all products are returned.
+   * @returns A Promise that resolves to an array of products, each with their associated merchant, categories, and images.
+   */
   async getAllProducts(sort_by: string, category: string) {
     const sortOptions: Record<
       string,
@@ -121,7 +147,6 @@ class ProductService {
       oldest: { column: "createdAt", direction: "asc" },
       price_asc: { column: "price", direction: "asc" },
       price_desc: { column: "price", direction: "desc" },
-      // popular: { column: "popularity", direction: "desc" },
     };
 
     const sortOption = sortOptions[sort_by] || sortOptions.newest;
@@ -183,11 +208,18 @@ class ProductService {
     return products;
   }
 
+  /**
+   * Retrieves a product by its slug along with its merchant, categories, images, favorite status, and reviews.
+   * @param slug - The slug of the product to retrieve.
+   * @param userId - The ID of the user to check if the product is a favorite.
+   * @returns A Promise that resolves to an object containing the product details, including its merchant,
+   * categories, images, whether it is a favorite for the given user, and its reviews with associated images.
+   * @throws ResponseError if the product is not found.
+   */
   async getProductBySlug(slug: string, userId: string) {
-    // Ambil produk berdasarkan slug
     const product = await prisma.product.findFirst({
       where: {
-        slug, // mencari berdasarkan slug produk
+        slug,
       },
       include: {
         merchant: {
@@ -221,15 +253,13 @@ class ProductService {
       throw new ResponseError(404, "Product not found");
     }
 
-    // Ambil gambar produk
     const imagesUrl = await prisma.images.findMany({
       where: {
         item_id: product.id,
-        type: MediaType.PRODUCT, // hanya gambar dengan tipe 'product'
+        type: MediaType.PRODUCT,
       },
     });
 
-    // Ambil status apakah produk adalah favorit dari user
     const isFavorite = await prisma.favorite.findFirst({
       where: {
         product_id: product.id,
@@ -237,27 +267,24 @@ class ProductService {
       },
     });
 
-    // Ambil review produk
     const reviews = await prisma.review.findMany({
       where: {
         product_id: product.id,
       },
       include: {
-        user: true, // untuk informasi user yang memberi review
+        user: true,
       },
     });
 
-    // Ambil gambar untuk setiap review
     const reviewImages = await prisma.images.findMany({
       where: {
         item_id: {
           in: reviews.map((review) => review.id),
         },
-        type: MediaType.REVIEW, // hanya gambar dengan tipe 'review'
+        type: MediaType.REVIEW,
       },
     });
 
-    // Gabungkan gambar-gambar review dengan setiap review
     const reviewsWithImages = reviews.map((review) => ({
       ...review,
       images: reviewImages
@@ -265,7 +292,6 @@ class ProductService {
         .map((image) => image.url),
     }));
 
-    // Return produk dengan gambar, status favorit, dan review terkait
     return {
       ...product,
       images: imagesUrl,
@@ -274,6 +300,12 @@ class ProductService {
     };
   }
 
+  /**
+   * Retrieves all reviews of a product by its ID.
+   * @param id - The unique identifier of the product whose reviews are being retrieved.
+   * @returns A Promise that resolves to an array of reviews of the product with the specified ID.
+   * Each review includes its associated user and an array of image URLs.
+   */
   async getProductReviews(id: number) {
     let reviews = await prisma.review.findMany({
       where: {
@@ -303,6 +335,14 @@ class ProductService {
     return reviews;
   }
 
+  /**
+   * Updates a product by its ID.
+   * @param product - The product object containing updated information.
+   * @param categoryIds - An array of category IDs to update the product's categories.
+   * @param files - An array of files to update the product's images.
+   * @returns A Promise that resolves to the updated product.
+   * @throws ResponseError if the product or merchant is not found.
+   */
   async updateProduct(
     product: Product,
     categoryIds: number[],
@@ -380,6 +420,12 @@ class ProductService {
     };
   }
 
+  /**
+   * Deletes a product by its ID.
+   * @param id The ID of the product to delete.
+   * @returns The deleted product.
+   * @throws ResponseError if the product is not found.
+   */
   async deleteProductById(id: number) {
     const existingProduct = await prisma.product.findFirst({
       where: {
@@ -407,6 +453,13 @@ class ProductService {
     });
   }
 
+  /**
+   * Uploads and saves media files if they exist for a given product.
+   * @param files The media files to be uploaded and saved.
+   * @param productId The ID of the product to associate with the media files.
+   * @returns A promise that resolves to an array of saved media data.
+   * @throws ResponseError if an error occurs during the upload or save process.
+   */
   private async uploadAndSaveMediasIfExist(
     files: Express.Request["files"],
     productId: number
@@ -428,6 +481,13 @@ class ProductService {
     }
   }
 
+  /**
+   * Adds images to a specified product.
+   * @param productId The ID of the product to add images to.
+   * @param files The files to be uploaded as images.
+   * @returns A Promise that resolves to an array of saved media data.
+   * @throws ResponseError if the product is not found or if no files exist.
+   */
   async addProductImages(productId: number, files: Express.Request["files"]) {
     const existingProduct = await prisma.product.findFirst({
       where: {
@@ -458,6 +518,12 @@ class ProductService {
     return mediaData;
   }
 
+  /**
+   * Retrieves the top favorited products with the specified limit.
+   * @param limit The limit of products to retrieve.
+   * @returns A Promise that resolves to an array of products, each with their associated categories, merchant, and images.
+   * The array is sorted by the number of favorites in descending order.
+   */
   async getTopFavoritedProducts(limit: number) {
     let products = await prisma.$queryRaw`
       SELECT p.*, COUNT(f.product_id) as favorite_count
@@ -534,6 +600,14 @@ class ProductService {
 
     return products;
   }
+
+  /**
+   * Retrieves the products favorited by a user, including details about each product's merchant,
+   * categories, and images.
+   * @param userId - The unique identifier of the user whose favorited products are being retrieved.
+   * @returns A Promise that resolves to an array of favorited products, each containing the product
+   * details, associated merchant information, categories, and image URLs.
+   */
   async getFavoritedProducts(userId: string) {
     let products = await prisma.favorite.findMany({
       where: {
@@ -586,6 +660,13 @@ class ProductService {
     return products;
   }
 
+  /**
+   * Adds a product to the user's list of favorite products.
+   * @param productId - The unique identifier of the product to add to the user's favorites.
+   * @param userId - The unique identifier of the user whose favorites are being updated.
+   * @returns A Promise that resolves to the newly added favorite product.
+   * @throws {ResponseError} If the product is already in the user's favorites.
+   */
   async addProductToFavorite(productId: number, userId: string) {
     const existingFavorite = await prisma.favorite.findFirst({
       where: {
@@ -606,6 +687,12 @@ class ProductService {
     });
   }
 
+  /**
+   * Deletes a product from the user's list of favorite products.
+   * @param productId - The unique identifier of the product to delete from the user's favorites.
+   * @param userId - The unique identifier of the user whose favorites are being updated.
+   * @returns A Promise that resolves to an object with the deleted product ID.
+   */
   async deleteProductFromFavorite(productId: number, userId: string) {
     await prisma.favorite.deleteMany({
       where: {

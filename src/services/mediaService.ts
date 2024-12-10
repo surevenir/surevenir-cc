@@ -22,6 +22,12 @@ const storage = new Storage({
 const bucket = storage.bucket(process.env.GOOGLE_STORAGE_BUCKET as string);
 
 class MediaService {
+  /**
+   * Uploads a file to Google Cloud Storage and returns a URL to the uploaded file.
+   * @param file The file to be uploaded.
+   * @returns A URL to the uploaded file.
+   * @throws ResponseError if the file is not provided.
+   */
   async uploadMedia(file: Express.Multer.File): Promise<string> {
     if (!file) {
       throw new ResponseError(400, "File is required");
@@ -48,6 +54,13 @@ class MediaService {
     });
   }
 
+  /**
+   * Updates an existing media by deleting the existing file and uploading a new one.
+   * @param file The new file to upload.
+   * @param url The URL of the existing file to delete.
+   * @returns A URL to the updated file.
+   * @throws ResponseError if the file is not provided, or if the URL is invalid or points to a file that does not exist.
+   */
   async updateMedia(
     file: Express.Multer.File,
     url: string | null
@@ -56,30 +69,23 @@ class MediaService {
       throw new ResponseError(400, "File is required");
     }
 
-    // Jika URL diberikan dan ada file yang perlu dihapus
     if (url) {
-      // Memastikan URL dimulai dengan https://storage.googleapis.com/
       const baseUrl = "https://storage.googleapis.com/";
 
       if (!url.startsWith(baseUrl)) {
         throw new ResponseError(400, "Invalid URL format");
       }
 
-      // Menghapus baseUrl dari URL untuk mendapatkan path objek di bucket
       const objectPath = url.replace(baseUrl, "");
 
-      // Memastikan hanya ada satu instance nama bucket di path
       const bucketName = process.env.GOOGLE_STORAGE_BUCKET as string;
       if (objectPath.startsWith(bucketName)) {
-        // Hapus nama bucket dari path jika ada (misalnya "surevenir-gcs-bucket/")
         const correctPath = objectPath.replace(bucketName + "/", "");
 
         const blob = bucket.file(correctPath);
 
-        // Mengecek apakah file ada di GCS
         const [exists] = await blob.exists();
         if (exists) {
-          // Menghapus file dari Google Cloud Storage (GCS)
           await blob.delete();
           console.log(`File deleted from GCS: ${correctPath}`);
         }
@@ -88,10 +94,15 @@ class MediaService {
       }
     }
 
-    // Upload file baru ke GCS
     return await this.uploadMedia(file);
   }
 
+  /**
+   * Saves the given medias to the database.
+   * @param medias The list of medias to save.
+   * @throws ResponseError if the list of medias is empty.
+   * @returns The created medias.
+   */
   async saveMedias(medias: MediaData[]) {
     if (medias.length === 0) {
       throw new ResponseError(400, "Media is empty");
@@ -108,10 +119,20 @@ class MediaService {
     });
   }
 
+  /**
+   * Deletes a media by its ID.
+   * @param id The ID of the media to delete.
+   * @throws ResponseError if the media is not found.
+   */
   async deleteMedia(id: number) {
     await prisma.images.delete({ where: { id } });
   }
 
+  /**
+   * Deletes a media by its URL.
+   * @param url The URL of the media to delete.
+   * @throws ResponseError if the media is not found, or if the URL is invalid or points to a file that does not exist.
+   */
   async deleteMediaByUrl(url: string) {
     try {
       const baseUrl = "https://storage.googleapis.com/";
@@ -135,7 +156,13 @@ class MediaService {
     }
   }
 
-  // Fungsi untuk menghapus file dari GCS dan database
+  /**
+   * Deletes a media from Google Cloud Storage by its object path.
+   * @param objectPath The path of the object in GCS.
+   * @param url The URL of the media to delete.
+   * @throws ResponseError if the media is not found in the database, or if the deletion fails.
+   */
+
   private async deleteFromGCS(objectPath: string, url: string) {
     try {
       const imageRecord = await prisma.images.findFirst({
@@ -146,7 +173,6 @@ class MediaService {
         throw new ResponseError(404, "Image not found in the database");
       }
 
-      // Menginisialisasi Google Cloud Storage client
       const blob = bucket.file(objectPath);
 
       await blob.delete();
@@ -163,6 +189,14 @@ class MediaService {
     }
   }
 
+  /**
+   * Deletes all media associated with a specific item and type from the database and Google Cloud Storage.
+   * @param itemId - The ID of the item whose media is to be deleted.
+   * @param type - The type of media to delete (e.g., PRODUCT, MARKET, etc.).
+   * @returns A promise that resolves when the media deletion process is complete.
+   * @throws ResponseError if there is a failure in deleting media from either the database or Google Cloud Storage.
+   * Logs a message if no media is found for the given item and type.
+   */
   async deleteMediaForItem(itemId: number, type: MediaType): Promise<void> {
     try {
       const mediasToDelete = await prisma.images.findMany({
@@ -196,6 +230,13 @@ class MediaService {
     }
   }
 
+  /**
+   * Deletes a media item from Google Cloud Storage by its URL.
+   * @param url - The URL of the media item to delete. Must be in the format of
+   * `https://storage.googleapis.com/<bucket-name>/<object-path>`.
+   * @throws ResponseError if the URL is invalid, the file is not found, or there
+   * is a failure in deleting the file from Google Cloud Storage.
+   */
   async deleteMediaFromGCSByUrl(url: string) {
     try {
       const baseUrl = "https://storage.googleapis.com/";

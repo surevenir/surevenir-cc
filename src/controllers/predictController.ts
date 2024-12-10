@@ -7,10 +7,20 @@ import PredictService from "../services/predictService";
 class PredictController {
   private predictService: PredictService;
 
+  /**
+   * Creates a new PredictController with a new PredictService
+   */
   constructor() {
     this.predictService = new PredictService();
   }
 
+  /**
+   * Predict the product category from the given image.
+   * @param req The request containing the image to predict.
+   * @param res The response to send the result.
+   * @param next The next function to call.
+   * @returns A Promise that resolves to nothing.
+   */
   async predict(req: Request, res: Response, next: NextFunction) {
     const prediction = await this.predictService.predict(req.file);
     createResponse(res, 200, "Prediction success", prediction);
@@ -21,6 +31,13 @@ class PredictController {
     );
   }
 
+  /**
+   * Retrieves the predict histories for a user.
+   * @param req The request containing the user that wants to retrieve histories.
+   * @param res The response to send the result.
+   * @param next The next function to call.
+   * @returns A Promise that resolves to nothing.
+   */
   async getUserHistories(req: Request, res: Response, next: NextFunction) {
     const histories = await this.predictService.getUserHistories(req.user!.id!);
     createResponse(
@@ -31,6 +48,13 @@ class PredictController {
     );
   }
 
+  /**
+   * Deletes a predict history for a user.
+   * @param req The request containing the id of the history to delete in the params.
+   * @param res The response to send the result.
+   * @param next The next function to call.
+   * @returns A Promise that resolves to nothing.
+   */
   async deleteHistory(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     await this.predictService.deleteHistoryById(parseInt(id));

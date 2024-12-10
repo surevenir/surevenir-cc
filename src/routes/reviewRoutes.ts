@@ -11,16 +11,10 @@ reviewRouter.get("/:id", authenticate, ReviewController.getReviewById);
 reviewRouter.post(
   "/",
   authenticate,
-  authorizeAdmin,
   multer.array("images", 10),
   ReviewController.createReview
 );
-reviewRouter.patch(
-  "/:id",
-  authenticate,
-  authorizeAdmin,
-  ReviewController.updateReview
-);
+reviewRouter.patch("/:id", authenticate, ReviewController.updateReview);
 reviewRouter.delete(
   "/:id",
   authenticate,

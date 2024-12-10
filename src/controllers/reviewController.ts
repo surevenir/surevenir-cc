@@ -13,10 +13,26 @@ import { publishMessage } from "../config/pubSubClient";
 class ReviewController {
   private reviewService: ReviewService;
 
+  /**
+   * Initializes a new instance of the ReviewController class.
+   * @constructor
+   */
   constructor() {
     this.reviewService = new ReviewService();
   }
 
+  /**
+   * Creates a new review for a product.
+   *
+   * This method parses the request body to extract review data,
+   * validates it, and calls the review service to persist the review.
+   * It also publishes a message to the review topic indicating
+   * that a review has been created.
+   *
+   * @param req - The incoming request object containing user and review data.
+   * @param res - The response object to send the result of the creation process.
+   * @param next - The next middleware function in the stack.
+   */
   async createReview(req: Request, res: Response, next: NextFunction) {
     const data: any = CreateReviewRequest.parse(req.body);
     const review = await this.reviewService.createReview(
@@ -52,17 +68,51 @@ class ReviewController {
     createResponse(res, 201, "Review created successfully", review);
   }
 
+  /**
+   * Retrieves all reviews from the database.
+   *
+   * This method is called when a GET request is made to /reviews.
+   * It retrieves all reviews from the review service and sends a response
+   * with the reviews list and a 200 status code.
+   *
+   * @param req - The incoming request object.
+   * @param res - The response object to send the result of the retrieval process.
+   * @param next - The next middleware function in the stack.
+   */
   async getAllReviews(req: Request, res: Response, next: NextFunction) {
     const reviews = await this.reviewService.getAllReviews();
     createResponse(res, 200, "Reviews retrieved successfully", reviews);
   }
 
+  /**
+   * Retrieves a review by ID.
+   *
+   * This method is called when a GET request is made to /reviews/:id.
+   * It retrieves a review from the review service and sends a response
+   * with the review and a 200 status code.
+   *
+   * @param req - The incoming request object containing the review ID as a parameter.
+   * @param res - The response object to send the result of the retrieval process.
+   * @param next - The next middleware function in the stack.
+   */
   async getReviewById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const review = await this.reviewService.getReviewById(parseInt(id));
     createResponse(res, 200, "Review retrieved successfully", review);
   }
 
+  /**
+   * Updates a review by ID.
+   *
+   * This method is called when a PATCH request is made to /reviews/:id.
+   * It updates a review in the review service and sends a response
+   * with the updated review and a 200 status code.
+   *
+   * @param req - The incoming request object containing the review ID as a parameter
+   *              and the updated data in the body.
+   * @param res - The response object to send the result of the update process.
+   * @param next - The next middleware function in the stack.
+   */
   async updateReview(req: Request, res: Response, next: NextFunction) {
     let { id } = req.params;
     const data: any = UpdateReviewRequest.parse(req.body);
@@ -73,6 +123,17 @@ class ReviewController {
     createResponse(res, 200, "Review updated successfully", review);
   }
 
+  /**
+   * Deletes a review by ID.
+   *
+   * This method is called when a DELETE request is made to /reviews/:id.
+   * It deletes a review from the review service and sends a response
+   * with the deleted review ID and a 200 status code.
+   *
+   * @param req - The incoming request object containing the review ID as a parameter.
+   * @param res - The response object to send the result of the deletion process.
+   * @param next - The next middleware function in the stack.
+   */
   async deleteReview(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     await this.reviewService.deleteReviewById(parseInt(id), req.user!);

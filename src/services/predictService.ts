@@ -12,10 +12,23 @@ type Prediction = {
 class PredictService {
   mediaService: MediaService;
 
+  /**
+   * Initializes a new instance of the PredictService class.
+   * Sets up the mediaService for handling media-related operations.
+   */
   constructor() {
     this.mediaService = new MediaService();
   }
 
+  /**
+   * Predicts the product category from the given image.
+   * @param file The image to predict.
+   * @returns A Promise that resolves to an object containing the prediction result, the category object, and a list of related products.
+   * The prediction result is an object with two properties: result (string) and accuracy (number).
+   * The category object is the category that the product belongs to.
+   * The related products are products that belong to the same category, including the product's merchant, product name, and images.
+   * @throws ResponseError if the image is not provided, or if the prediction fails.
+   */
   async predict(file: Express.Request["file"]) {
     if (!file) {
       throw new ResponseError(400, "Image is required");
@@ -100,6 +113,14 @@ class PredictService {
     };
   }
 
+  /**
+   * Creates a new history for a user.
+   * @param userId The ID of the user who submitted the image.
+   * @param file The image to predict.
+   * @param prediction The prediction result object from the predict function.
+   * @returns A Promise that resolves to nothing.
+   * @throws ResponseError if the image is not provided or if the prediction fails.
+   */
   async createHistory(
     userId: string,
     file: Express.Request["file"],
@@ -116,6 +137,11 @@ class PredictService {
     });
   }
 
+  /**
+   * Retrieves the predict histories of a user.
+   * @param userId The ID of the user to retrieve histories for.
+   * @returns A Promise that resolves to an array of history objects, each containing the history ID, user ID, image URL, prediction result, accuracy and category name, description and range price.
+   */
   async getUserHistories(userId: string) {
     const result = await prisma.$queryRaw`
       SELECT 
@@ -132,6 +158,13 @@ class PredictService {
     return result;
   }
 
+  /**
+   * Deletes a predict history by its ID.
+   * @param id The ID of the history to delete.
+   * @returns A Promise that resolves to the deleted history object.
+   * @throws ResponseError if the history is not found, if there is a failure in
+   * deleting the associated media, or if there is a failure in deleting the history.
+   */
   async deleteHistoryById(id: number) {
     const existingHistory = await prisma.history.findFirst({
       where: {

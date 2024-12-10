@@ -5,6 +5,14 @@ import { User } from "@prisma/client";
 import { MediaType } from "./mediaService";
 
 class CartService {
+  /**
+   * Adds a product to the user's cart. If the product is already in the cart, its quantity is increased.
+   * @param user The user to add the product to their cart.
+   * @param productId The ID of the product to add.
+   * @param quantity The quantity of the product to add.
+   * @returns A cart containing the products in the user's cart and the total price of the products.
+   * @throws {ResponseError} If the product is not found.
+   */
   async addproductToCart(user: User, productId: number, quantity: number) {
     const existingProduct = await prisma.product.findFirst({
       where: {
@@ -15,10 +23,6 @@ class CartService {
     if (!existingProduct) {
       throw new ResponseError(404, "Product not found");
     }
-
-    // check if product already in cart
-    // if yes, update the quantity
-    // if no, add product to cart
 
     const existingCart = await prisma.cart.findFirst({
       where: {
@@ -55,7 +59,6 @@ class CartService {
       },
     });
 
-    // calculate product total price and total price
     const totalPrice = cartWithProducts.reduce((acc, cart) => {
       return acc + cart.product.price * cart.quantity;
     }, 0);
@@ -66,8 +69,14 @@ class CartService {
     };
   }
 
+  /**
+   * Updates the quantity of a product in the user's cart. If the quantity is zero, the product is removed from the cart.
+   * @param user The user to update the cart for.
+   * @param cartId The ID of the cart item to update.
+   * @param quantity The new quantity of the product in the cart.
+   * @returns A cart containing the products in the user's cart and the total price of the products.
+   */
   async updateProductInCart(user: User, cartId: number, quantity: number) {
-    // if quantity is 0, delete cart
     if (quantity === 0) {
       await prisma.cart.delete({
         where: {
@@ -94,7 +103,6 @@ class CartService {
       },
     });
 
-    // calculate product total price and total price
     const totalPrice = cartWithProducts.reduce((acc, cart) => {
       return acc + cart.product.price * cart.quantity;
     }, 0);
@@ -105,6 +113,11 @@ class CartService {
     };
   }
 
+  /**
+   * Retrieves the products in a user's cart. The products include the product object with its merchant and images.
+   * @param user The user to retrieve the cart for.
+   * @returns An object containing the cart and the total price of the products in the cart.
+   */
   async getProductsInCart(user: User) {
     const cartWithProducts: any = await prisma.cart.findMany({
       where: {
@@ -119,7 +132,6 @@ class CartService {
       },
     });
 
-    // get images for each product
     for (const cart of cartWithProducts) {
       const images = await prisma.images.findMany({
         where: {
@@ -132,7 +144,6 @@ class CartService {
       cart.subtotal_price = cart.product.price * cart.quantity;
     }
 
-    // calculate product total price and total price
     const totalPrice = cartWithProducts.reduce((acc: any, cart: any) => {
       return acc + cart.product.price * cart.quantity;
     }, 0);
@@ -143,6 +154,13 @@ class CartService {
     };
   }
 
+  /**
+   * Deletes a product from the user's cart.
+   * @param user The user to delete the product from their cart.
+   * @param cartId The ID of the product to delete from the user's cart.
+   * @returns An object containing the cart and the total price of the products in the cart.
+   * @throws {ResponseError} If the product is not found in the user's cart.
+   */
   async deleteCartItem(user: User, cartId: number) {
     const existingCart = await prisma.cart.findFirst({
       where: {
@@ -170,7 +188,6 @@ class CartService {
       },
     });
 
-    // calculate product total price and total price
     const totalPrice = cartWithProducts.reduce((acc, cart) => {
       return acc + cart.product.price * cart.quantity;
     }, 0);
@@ -181,6 +198,11 @@ class CartService {
     };
   }
 
+  /**
+   * Deletes all products from a user's cart.
+   * @param user The user to delete all products from their cart.
+   * @returns An object containing an empty cart and the total price of the products in the cart.
+   */
   async deleteAllProductsInCart(user: User) {
     await prisma.cart.deleteMany({
       where: {
@@ -194,8 +216,14 @@ class CartService {
     };
   }
 
+  /**
+   * Performs a checkout for a user. This will create a checkout entity in the database.
+   * @param user The user to checkout.
+   * @param productIds The product ids to checkout.
+   * @returns An object containing the cart, checkout and checkout details.
+   * @throws {ResponseError} If the product is not found in the user's cart.
+   */
   async checkout(user: User, productIds: number[]) {
-    // check if all products in cart
     const cartWithProducts = await prisma.cart.findMany({
       where: {
         AND: [{ user_id: user.id }, { product_id: { in: productIds } }],
@@ -217,7 +245,6 @@ class CartService {
       cart.subtotal_price = cart.product.price * cart.quantity;
     }
 
-    // check all product ids are matched
     const cartProductIds = cartWithProducts.map((cart) => cart.product_id);
     const notFoundProductIds = productIds.filter(
       (id) => !cartProductIds.includes(id)
@@ -238,7 +265,6 @@ class CartService {
     let checkoutDetails: any[] = [];
 
     await prisma.$transaction(async (prisma) => {
-      // Create checkout
       checkout = await prisma.checkout.create({
         data: {
           user_id: user.id,
@@ -248,7 +274,6 @@ class CartService {
       });
       console.log("checkout:", checkout);
 
-      // Prepare checkout details
       checkoutDetails = cartWithProducts.map((cart) => ({
         product_id: cart.product_id,
         checkout_id: checkout.id,
@@ -259,12 +284,10 @@ class CartService {
       }));
       console.log("checkoutDetails:", checkoutDetails);
 
-      // Insert checkout details
       await prisma.checkoutDetails.createMany({
         data: checkoutDetails,
       });
 
-      // Update stock for each product
       for (const cart of cartWithProducts) {
         await prisma.product.update({
           where: {
@@ -278,7 +301,6 @@ class CartService {
         });
       }
 
-      // Delete items from cart
       await prisma.cart.deleteMany({
         where: {
           AND: [{ user_id: user.id }, { product_id: { in: productIds } }],
@@ -293,6 +315,17 @@ class CartService {
     };
   }
 
+  /**
+   * Updates the status of a checkout order.
+   *
+   * This function parses the request body to retrieve the new status for a checkout order and the order ID from the request parameters.
+   * It updates the checkout status in the database using the cart service, then sends a response indicating the status update was successful.
+   *
+   * @param checkoutId - The ID of the checkout order to update.
+   * @param status - The new status for the checkout order. Must be one of PENDING, DELIVERED, CANCELLED, or COMPLETED.
+   *
+   * @returns An object containing the checkout order and the new status.
+   */
   async updateCheckoutStatus(checkoutId: number, status: string) {
     const existingCheckout = await prisma.checkout.findFirst({
       where: {
@@ -319,27 +352,16 @@ class CartService {
     };
   }
 
-  // async getCheckouts(user: User) {
-  //   const checkouts = await prisma.checkout.findMany({
-  //     where: {
-  //       user_id: user.id,
-  //     },
-  //     include: {
-  //       checkout_details: {
-  //         include: {
-  //           product: {
-  //             include: {
-  //               merchant: true,
-  //             },
-  //           },
-  //         },
-  //       },
-  //     },
-  //   });
-
-  //   return checkouts;
-  // }
-
+  /**
+   * Retrieves all checkout orders for a user.
+   *
+   * This function fetches the checkout orders associated with the authenticated user from the cart service.
+   * It then sends a response with the list of checkout orders and their details.
+   *
+   * @param user - The user to retrieve the checkouts for.
+   *
+   * @returns An array of checkout orders associated with the user, with their details.
+   */
   async getCheckouts(user: User) {
     const checkouts = await prisma.checkout.findMany({
       where: {
@@ -358,18 +380,16 @@ class CartService {
       },
     });
 
-    // Tambahkan images ke dalam setiap product di checkout_details
     for (const checkout of checkouts) {
       for (const detail of checkout.checkout_details) {
         if (detail.product) {
           const images = await prisma.images.findMany({
             where: {
               item_id: detail.product.id,
-              type: "product", // Filter untuk gambar produk
+              type: "product",
             },
           });
 
-          // Tambahkan properti images ke dalam product secara dinamis
           (detail.product as any).images = images;
         }
       }

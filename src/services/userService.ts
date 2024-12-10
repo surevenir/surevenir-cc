@@ -7,12 +7,22 @@ import crypto from "crypto";
 class UserService {
   private mediaService: MediaService;
 
+  /**
+   * Initializes a new instance of the UserService class.
+   * Sets up a media service for handling media-related operations.
+   */
   constructor() {
     this.mediaService = new MediaService();
   }
 
+  /**
+   * Creates a new user.
+   * @param user The user data to be created.
+   * @param file The profile image file to be uploaded.
+   * @returns The created user.
+   * @throws ResponseError if the user already exists, username or email already used.
+   */
   async createUser(user: User, file: Express.Request["file"]) {
-    // make sure id, username, email is unique
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
@@ -35,19 +45,24 @@ class UserService {
       user.profile_image_url = mediaUrl;
     }
 
+    /**
+     * Encrypts a password using the AES-256-CTR algorithm.
+     *
+     * @param password The plaintext password to be encrypted.
+     * @returns The encrypted password in the format of "iv:encrypted".
+     * @throws Error if the PASSWORD_KEY is not defined in the environment variables.
+     */
     const encryptPassword = (password: string): string => {
-      // Mengambil key dari env
       const key = process.env.NEXT_PUBLIC_PASSWORD_KEY;
 
       if (!key) {
         throw new Error("PASSWORD_KEY is not defined");
       }
 
-      // Hash key menjadi panjang 32 byte dengan SHA-256
       const hashedKey = crypto.createHash("sha256").update(key).digest();
 
       const algorithm = "aes-256-ctr";
-      const iv = crypto.randomBytes(16); // Inisialisasi vector acak
+      const iv = crypto.randomBytes(16);
       const cipher = crypto.createCipheriv(algorithm, hashedKey, iv);
       let encrypted = cipher.update(password, "utf8", "hex");
       encrypted += cipher.final("hex");
@@ -66,10 +81,20 @@ class UserService {
     });
   }
 
+  /**
+   * Retrieves all users.
+   * @returns A Promise that resolves to an array of users.
+   */
   async getAllUsers() {
     return await prisma.user.findMany();
   }
 
+  /**
+   * Retrieves a user by their email address.
+   * @param email - The email address of the user to be retrieved.
+   * @returns A Promise that resolves to the user with the specified email.
+   * @throws ResponseError if no user is found with the provided email address.
+   */
   async getUserByEmail(email: string) {
     const user = await prisma.user.findUnique({
       where: {
@@ -84,6 +109,10 @@ class UserService {
     return user;
   }
 
+  /**
+   * Retrieves all admin users.
+   * @returns A Promise that resolves to an array of admin users.
+   */
   async getUsersAdmin() {
     return await prisma.user.findMany({
       where: {
@@ -92,6 +121,12 @@ class UserService {
     });
   }
 
+  /**
+   * Retrieves a user by their ID.
+   * @param id - The ID of the user to be retrieved.
+   * @returns A Promise that resolves to the user with the specified ID.
+   * @throws ResponseError if no user is found with the provided ID.
+   */
   async getUserById(id: string) {
     const user = await prisma.user.findUnique({
       where: {
@@ -130,6 +165,12 @@ class UserService {
     });
   }
 
+  /**
+   * Deletes a user by their ID.
+   * @param id - The ID of the user to be deleted.
+   * @returns A Promise that resolves to the deleted user.
+   * @throws ResponseError if the user is not found.
+   */
   async deleteUserById(id: string) {
     const existingUser = await prisma.user.findFirst({
       where: {
