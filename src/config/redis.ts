@@ -4,6 +4,10 @@ const redisClient = createClient({
   socket: {
     host: "localhost", // example
     port: 6379,
+    reconnectStrategy: (retries: number, cause: Error) => {
+      console.error(`Reconnect attempt ${retries} failed. Cause:`, cause);
+      return false; // Stop retrying
+    },
   },
 });
 

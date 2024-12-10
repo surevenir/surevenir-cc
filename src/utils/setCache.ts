@@ -15,6 +15,11 @@ const setCache = (req: Request, response: ResponseBody) => {
     return;
   }
 
+  if(!redisClient.isOpen) {
+    console.log("Redis client is not open. Skipping caching: setCache");
+    return;
+  }
+
   const cacheKey = `${req.originalUrl}___${req.user?.id}`;
   try {
     console.log("Trying to set cache...");

@@ -25,6 +25,12 @@ const cacheMiddleware = async (
     return;
   }
 
+  if (!redisClient.isOpen) {
+    console.log("Redis client is not open. Skipping caching: cacheMiddleware");
+    next();
+    return;
+  }
+
   const cacheKey = `${req.originalUrl}___${req.user?.id}`;
   console.log("Cache key:", cacheKey);
 
