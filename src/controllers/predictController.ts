@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import Controller from "../utils/controllerDecorator";
 import createResponse from "../utils/createResponse";
 import PredictService from "../services/predictService";
+import setCache from "../utils/setCache";
 
 @Controller
 class PredictController {
@@ -57,7 +58,7 @@ class PredictController {
    */
   async getTopScanner(req: Request, res: Response, next: NextFunction) {
     const topScanner = await this.predictService.getTopScanner();
-    createResponse(res, 200, "Top scanner retrieved successfully", topScanner);
+    setCache(req, createResponse(res, 200, "Top scanner retrieved successfully", topScanner));
   }
 
   /**

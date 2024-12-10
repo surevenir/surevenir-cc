@@ -6,6 +6,7 @@ import {
 } from "../types/request/merchantRequest";
 import Controller from "../utils/controllerDecorator";
 import MerchantService from "../services/merchantService";
+import setCache from "../utils/setCache";
 
 @Controller
 class MerchantController {
@@ -62,7 +63,7 @@ class MerchantController {
    */
   async getAllMerchants(req: Request, res: Response, next: NextFunction) {
     const merchants = await this.merchantService.getAllMerchants();
-    createResponse(res, 200, "Merchants retrieved successfully", merchants);
+    setCache(req, createResponse(res, 200, "Merchants retrieved successfully", merchants));
   }
 
   async getAllMerchantsByOwner(
@@ -86,7 +87,7 @@ class MerchantController {
   async getMerchantById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const merchant = await this.merchantService.getMerchantById(parseInt(id));
-    createResponse(res, 200, "Merchant retrieved successfully", merchant);
+    setCache(req, createResponse(res, 200, "Merchant retrieved successfully", merchant));
   }
 
   /**
@@ -114,12 +115,7 @@ class MerchantController {
     const products = await this.merchantService.getProductsInMerchant(
       parseInt(id)
     );
-    createResponse(
-      res,
-      200,
-      "Products in merchant retrieved successfully",
-      products
-    );
+    setCache(req, createResponse(res, 200, "Products in merchant retrieved successfully", products));
   }
 
   /**

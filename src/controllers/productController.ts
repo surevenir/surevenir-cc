@@ -6,6 +6,7 @@ import {
 } from "../types/request/productRequest";
 import Controller from "../utils/controllerDecorator";
 import ProductService from "../services/productService";
+import setCache from "../utils/setCache";
 
 @Controller
 class ProductController {
@@ -75,7 +76,7 @@ class ProductController {
       parseInt(id),
       req.user!.id
     );
-    createResponse(res, 200, "Product retrieved successfully", product);
+    setCache(req, createResponse(res, 200, "Product retrieved successfully", product));
   }
 
   /**
@@ -92,8 +93,7 @@ class ProductController {
       sort_by as string,
       category as string
     );
-
-    createResponse(res, 200, "Product retrieved successfully", product);
+    setCache(req, createResponse(res, 200, "Product retrieved successfully", product));
   }
 
   /**
@@ -142,7 +142,7 @@ class ProductController {
   async getProductReviews(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const product = await this.productService.getProductReviews(parseInt(id));
-    createResponse(res, 200, "Product reviews retrieved successfully", product);
+    setCache(req, createResponse(res, 200, "Product reviews retrieved successfully", product));
   }
 
   /**
@@ -199,9 +199,7 @@ class ProductController {
     const products = await this.productService.getTopFavoritedProducts(
       parseInt(limit as string)
     );
-    createResponse(res, 200, "Top favorited products retrieved successfully", {
-      products,
-    });
+    setCache(req, createResponse(res, 200, "Top favorited products retrieved successfully", { products }));
   }
 
   /**
@@ -215,9 +213,7 @@ class ProductController {
     const products = await this.productService.getFavoritedProducts(
       req.user!.id!
     );
-    createResponse(res, 200, "Top favorited products retrieved successfully", {
-      products,
-    });
+    setCache(req, createResponse(res, 200, "Top favorited products retrieved successfully", { products }));
   }
 
   /**

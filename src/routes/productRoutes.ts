@@ -3,10 +3,16 @@ import ProductController from "../controllers/productController";
 import authorizeAdmin from "../middlewares/authorizeAdmin";
 import authenticate from "../middlewares/authenticate";
 import multer from "../middlewares/multer";
+import cacheMiddleware from "../middlewares/cacheMiddleware";
 
 const productRouter = express.Router();
 
-productRouter.get("/", authenticate, ProductController.getAllProducts);
+productRouter.get(
+  "/",
+  authenticate,
+  cacheMiddleware,
+  ProductController.getAllProducts
+);
 productRouter.get(
   "/slug/:slug",
   authenticate,
@@ -15,14 +21,21 @@ productRouter.get(
 productRouter.get(
   "/top-favorites",
   authenticate,
+  cacheMiddleware,
   ProductController.getTopFavoritedProducts
 );
 productRouter.get(
   "/favorites",
   authenticate,
+  cacheMiddleware,
   ProductController.getFavoritedProducts
 );
-productRouter.get("/:id", authenticate, ProductController.getProductById);
+productRouter.get(
+  "/:id",
+  authenticate,
+  cacheMiddleware,
+  ProductController.getProductById
+);
 productRouter.get(
   "/by/owner",
   authenticate,
@@ -31,6 +44,7 @@ productRouter.get(
 productRouter.get(
   "/:id/reviews",
   authenticate,
+  cacheMiddleware,
   ProductController.getProductReviews
 );
 productRouter.post(

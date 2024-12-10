@@ -3,11 +3,22 @@ import CategoryController from "../controllers/categoryController";
 import authorizeAdmin from "../middlewares/authorizeAdmin";
 import authenticate from "../middlewares/authenticate";
 import multer from "../middlewares/multer";
+import cacheMiddleware from "../middlewares/cacheMiddleware";
 
 const marketRouter = express.Router();
 
-marketRouter.get("/", authenticate, CategoryController.getAllCategories);
-marketRouter.get("/:id", authenticate, CategoryController.getCategoryById);
+marketRouter.get(
+  "/",
+  authenticate,
+  cacheMiddleware,
+  CategoryController.getAllCategories
+);
+marketRouter.get(
+  "/:id",
+  authenticate,
+  cacheMiddleware,
+  CategoryController.getCategoryById
+);
 marketRouter.post(
   "/",
   authenticate,

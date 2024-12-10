@@ -13,11 +13,22 @@ import "./types/global/authUser";
 import multer from "./middlewares/multer";
 import MediaService from "./services/mediaService";
 import prisma from "./config/database";
+import { connectRedis, redisClient } from "./config/redis";
 import "./utils/validateEnv";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 const FRONTEND_URL = process.env.FRONTEND_URL || "";
+
+if (process.env.WITH_CACHING === "true") {
+  connectRedis();
+}
+redisClient.on("connect", () => {
+  console.log("Connected to Redis!");
+});
+redisClient.on("error", (err) => {
+  console.error("Redis Client Error:", err);
+});
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, TypeScript with Express!");

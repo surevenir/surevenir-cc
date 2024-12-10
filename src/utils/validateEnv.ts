@@ -51,6 +51,19 @@ const EnvSchema = z.object({
     })
     .min(1, "PUB_SUB_SERVICE_ACCOUNT_PATH cannot be empty."),
 
+  WITH_CACHING: z.enum(["true", "false"], {
+    description: "Enable caching for API requests",
+    required_error: "😱 WITH_CACHING is required.",
+  }),
+
+  CACHING_TTL_SECONDS: z.coerce
+    .number({
+      description: "Cache time-to-live in seconds",
+      required_error: "😱 CACHING_TTL_SECONDS is required.",
+    })
+    .positive("CACHING_TTL_SECONDS must be a positive number.")
+    .max(60, "CACHING_TTL_SECONDS must be less than 60."),
+
   PORT: z.coerce
     .number({
       description: "Server port number, coerced from string to number",
