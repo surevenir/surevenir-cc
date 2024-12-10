@@ -397,6 +397,42 @@ class CartService {
 
     return checkouts;
   }
+
+  async getAllCheckouts() {
+    const checkouts = await prisma.checkout.findMany({
+      include: {
+        checkout_details: {
+          include: {
+            product: {
+              include: {
+                merchant: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    for (const checkout of checkouts) {
+      for (const detail of checkout.checkout_details) {
+        if (detail.product) {
+          const images = await prisma.images.findMany({
+            where: {
+              item_id: detail.product.id,
+              type: "product",
+            },
+          });
+
+          (detail.product as any).images = images;
+        }
+      }
+    }
+
+    return checkouts;
+  }
 }
 
 export default CartService;

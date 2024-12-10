@@ -227,7 +227,7 @@ class ReviewService {
    * provided as part of a review.
    *
    * @param files - The media files to be uploaded and associated with the review.
-   * @param productId - The ID of the product for which the media files are being uploaded.
+   * @param reviewId - The ID of the review for which the media files are being uploaded.
    *
    * @returns A promise that resolves to an array of saved media data, including URLs and metadata.
    *
@@ -235,7 +235,7 @@ class ReviewService {
    */
   private async uploadAndSaveMediasIfExist(
     files: Express.Request["files"],
-    productId: number
+    reviewId: number
   ) {
     if (files && files.length != 0) {
       const mediaUrls = await Promise.all(
@@ -244,7 +244,7 @@ class ReviewService {
 
       const mediaData: MediaData[] = mediaUrls.map((mediaUrl) => ({
         url: mediaUrl,
-        itemId: productId,
+        itemId: reviewId,
         type: MediaType.REVIEW,
       }));
 

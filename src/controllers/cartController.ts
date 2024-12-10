@@ -139,6 +139,9 @@ class CartController {
    */
   async updateCheckoutStatus(req: Request, res: Response, next: NextFunction) {
     const data = UpdateCheckoutStatusRequest.parse(req.body);
+
+    console.log(JSON.stringify(data, null, 2));
+
     const { id } = req.params;
     const status = data.status;
     const result = await this.cartService.updateCheckoutStatus(
@@ -180,6 +183,21 @@ class CartController {
    */
   async getCheckouts(req: Request, res: Response, next: NextFunction) {
     const result = await this.cartService.getCheckouts(req.user!);
+    createResponse(res, 200, "Checkouts fetched", result);
+  }
+
+  /**
+   * Retrieves all checkout orders in the database.
+   *
+   * This function fetches all checkout orders from the cart service.
+   * It then sends a response with the list of checkout orders and their details.
+   *
+   * @param req - The incoming request.
+   * @param res - The response to be sent back to the client, containing the checkout orders.
+   * @param next - The callback to execute the next middleware or error handler in the Express.js request-response cycle.
+   */
+  async getAllCheckouts(req: Request, res: Response, next: NextFunction) {
+    const result = await this.cartService.getAllCheckouts();
     createResponse(res, 200, "Checkouts fetched", result);
   }
 }

@@ -11,12 +11,13 @@ cartRouter.patch("/:id", authenticate, CartController.updateProductInCart);
 cartRouter.delete("/:id", authenticate, CartController.deleteCartItem);
 cartRouter.delete("/", authenticate, CartController.deleteAllProductsInCart);
 cartRouter.post("/checkout", authenticate, CartController.checkout);
-cartRouter.put(
+cartRouter.patch(
   "/checkout/:id/status",
   authenticate,
   authorizeAdmin,
   CartController.updateCheckoutStatus
 );
 cartRouter.get("/checkout", authenticate, CartController.getCheckouts);
+cartRouter.get("/checkout/all", authenticate, CartController.getAllCheckouts);
 
 export default cartRouter;

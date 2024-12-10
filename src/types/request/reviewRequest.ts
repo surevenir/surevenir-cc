@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const CreateReviewRequest = z.object({
-  rating: z.string().refine((value) => /^[1-5]$/.test(value), {
+  rating: z.string().refine((value) => /^[0-6]$/.test(value), {
     message: "rating must be a number between 1 and 5",
   }),
   comment: z.string(),
