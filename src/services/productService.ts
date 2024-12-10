@@ -725,10 +725,11 @@ class ProductService {
       },
     });
 
+    const productIds = products.map((product) => product.product_id);
     const imagesUrl = await prisma.images.findMany({
       where: {
         item_id: {
-          in: products.map((product) => product.product_id),
+          in: productIds,
         },
         type: MediaType.PRODUCT,
       },
@@ -736,7 +737,9 @@ class ProductService {
 
     products = (products as any).map((product: any) => ({
       ...product,
-      images: imagesUrl.filter((image) => image.item_id === product.id),
+      images: imagesUrl
+        .filter((image) => image.item_id === product.product_id)
+        .map((image) => image.url),
     }));
 
     return products;
