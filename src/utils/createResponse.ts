@@ -1,5 +1,14 @@
 import { Response } from "express";
 
+export type ResponseBody = {
+  from_cache: boolean;
+  success: boolean;
+  status_code: number;
+  message: string;
+  timestamp: string;
+  data: any;
+};
+
 /**
  * A utility function to create a standardized response object for API endpoints.
  *
@@ -15,10 +24,10 @@ export default (
   statucCode: number,
   message: string,
   data: any
-) => {
+): ResponseBody => {
   const isSuccess: boolean = statucCode >= 200 && statucCode < 300;
 
-  const body = {
+  const body: ResponseBody = {
     from_cache: false,
     success: isSuccess,
     status_code: statucCode,
@@ -27,5 +36,6 @@ export default (
     data,
   };
 
-  return res.status(statucCode).json(body);
+  res.status(statucCode).json(body);
+  return body;
 };

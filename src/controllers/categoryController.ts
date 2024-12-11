@@ -6,6 +6,7 @@ import {
 } from "../types/request/categoryRequest";
 import Controller from "../utils/controllerDecorator";
 import CategoryService from "../services/categoryService";
+import setCache from "../utils/setCache";
 
 @Controller
 class CategoryController {
@@ -42,7 +43,7 @@ class CategoryController {
    */
   async getAllCategories(req: Request, res: Response, next: NextFunction) {
     const categories = await this.categoryService.getAllCategories();
-    createResponse(res, 200, "Categories retrieved successfully", categories);
+    setCache(req, createResponse(res, 200, "Categories retrieved successfully", categories));
   }
 
   /**
@@ -55,7 +56,7 @@ class CategoryController {
   async getCategoryById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const category = await this.categoryService.getCategoryById(parseInt(id));
-    createResponse(res, 200, "Category retrieved successfully", category);
+    setCache(req, createResponse(res, 200, "Category retrieved successfully", category));
   }
 
   /**

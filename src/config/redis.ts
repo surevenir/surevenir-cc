@@ -2,12 +2,14 @@ import { createClient } from "redis";
 
 const redisClient = createClient({
   socket: {
-    host: "10.0.0.3", // example 
-    port: 6379,
+    host: process.env.REDiS_HOST, 
+    port: parseInt(process.env.REDiS_PORT as string),
+    reconnectStrategy: (retries: number, cause: Error) => {
+      console.error(`Reconnect attempt ${retries} failed. Cause:`, cause);
+      return false; // Stop retrying
+    },
   },
 });
-
-redisClient.on("error", (err) => console.error("Redis Client Error", err));
 
 const connectRedis = async () => {
   try {

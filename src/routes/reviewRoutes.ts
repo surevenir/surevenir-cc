@@ -3,10 +3,16 @@ import ReviewController from "../controllers/reviewController";
 import authorizeAdmin from "../middlewares/authorizeAdmin";
 import authenticate from "../middlewares/authenticate";
 import multer from "../middlewares/multer";
+import cacheMiddleware from "../middlewares/cacheMiddleware";
 
 const reviewRouter = express.Router();
 
-reviewRouter.get("/", authenticate, ReviewController.getAllReviews);
+reviewRouter.get(
+  "/",
+  authenticate,
+  cacheMiddleware,
+  ReviewController.getAllReviews
+);
 reviewRouter.get("/:id", authenticate, ReviewController.getReviewById);
 reviewRouter.post(
   "/",

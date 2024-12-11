@@ -6,6 +6,7 @@ import {
 } from "../types/request/marketRequest";
 import Controller from "../utils/controllerDecorator";
 import MarketService from "../services/marketService";
+import setCache from "../utils/setCache";
 
 @Controller
 class MarketController {
@@ -63,7 +64,10 @@ class MarketController {
    */
   async getAllMarkets(req: Request, res: Response, next: NextFunction) {
     const markets = await this.marketService.getAllMarkets();
-    createResponse(res, 200, "Markets retrieved successfully", markets);
+    setCache(
+      req,
+      createResponse(res, 200, "Markets retrieved successfully", markets)
+    );
   }
 
   /**
@@ -76,7 +80,10 @@ class MarketController {
   async getMarketById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const market = await this.marketService.getMarketById(parseInt(id));
-    createResponse(res, 200, "Market retrieved successfully", market);
+    setCache(
+      req,
+      createResponse(res, 200, "Market retrieved successfully", market)
+    );
   }
 
   /**
@@ -104,11 +111,15 @@ class MarketController {
     const merchants = await this.marketService.getMerchantsInMarket(
       parseInt(id)
     );
-    createResponse(
-      res,
-      200,
-      "Merchants in market retrieved successfully",
-      merchants
+
+    setCache(
+      req,
+      createResponse(
+        res,
+        200,
+        "Merchants in market retrieved successfully",
+        merchants
+      )
     );
   }
 

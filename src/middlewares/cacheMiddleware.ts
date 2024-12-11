@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { redisClient } from "../config/redis";
+import { clear, log } from "console";
 
 /**
  * Middleware that checks for cached responses in Redis.
@@ -19,18 +20,34 @@ const cacheMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
+  if (process.env.WITH_CACHING === "false") {
+    next();
+    return;
+  }
+
+  if (!redisClient.isOpen) {
+    console.log("Redis client is not open. Skipping caching: cacheMiddleware");
+    next();
+    return;
+  }
+
   const cacheKey = `${req.originalUrl}___${req.user?.id}`;
+  console.log("Cache key:", cacheKey);
 
   try {
+    console.log("Trying to get data from cache...");
     const cachedData = await redisClient.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for:", cacheKey);
-      const dataJson = JSON.parse(cachedData);
-      return res.json({ from_cache: true, ...dataJson });
+      const dataJson = JSON.parse(cachedData as string);
+      delete dataJson.from_cache;
+      res.json({ from_cache: true, ...dataJson });
+      return;
     }
 
     console.log("Cache miss for:", cacheKey);
     console.log("Fetching data from the server...");
+
     next();
   } catch (error) {
     console.error("Redis error:", error);
