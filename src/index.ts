@@ -1,5 +1,7 @@
 import express, { Request, Response } from "express";
+import { createServer } from "http";
 import userRoutes from "./routes/userRoutes";
+import WebSocket, { WebSocketServer } from "ws";
 import marketRoutes from "./routes/marketRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import merchantRoutes from "./routes/merchantRoutes";
@@ -14,17 +16,25 @@ import multer from "./middlewares/multer";
 import MediaService from "./services/mediaService";
 import prisma from "./config/database";
 import "./utils/validateEnv";
+import { pubSubClient } from "./utils/pubSubClient";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 const FRONTEND_URL = process.env.FRONTEND_URL || "";
+
+// Buat HTTP server dan WebSocket server
+const server = createServer(app);
+const wss = new WebSocketServer({ server });
+
+let recentMessages: { id: string; data: string; attributes: object }[] = [];
+const subscriptionName = process.env.SUBSCRIPTION_NAME as string;
+const subscription = pubSubClient.subscription(subscriptionName);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, TypeScript with Express!");
 });
 
 app.use(express.json());
-
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", FRONTEND_URL);
   res.setHeader(
@@ -44,6 +54,55 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/carts", cartRoutes);
 app.use("/api/images", mediaRoutes);
 app.use("/api/predict", predictRoutes);
+
+// WebSocket Connection Management
+wss.on("connection", (ws: any) => {
+  console.log("New WebSocket connection established");
+
+  ws.on("close", () => {
+    console.log("WebSocket connection closed");
+  });
+
+  ws.on("error", (error: any) => {
+    console.error("WebSocket error:", error);
+  });
+});
+
+// Pub/Sub Subscription
+subscription.on("message", (message: any) => {
+  console.log(`\nReceived message:`);
+  console.log(`  ID: ${message.id}`);
+  console.log(`  Data: ${message.data.toString()}`);
+  console.log(`  Attributes: ${JSON.stringify(message.attributes)}`);
+
+  // Simpan pesan terbaru
+  recentMessages.push({
+    id: message.id,
+    data: message.data.toString(),
+    attributes: message.attributes,
+  });
+
+  if (recentMessages.length > 100) {
+    recentMessages.shift(); // Batasi jumlah pesan yang disimpan
+  }
+
+  // Kirim pesan ke semua klien WebSocket
+  wss.clients.forEach((client: any) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(
+        JSON.stringify({
+          id: message.id,
+          data: message.data.toString(),
+          attributes: message.attributes,
+        })
+      );
+    }
+  });
+
+  // Acknowledge the message
+  message.ack();
+  console.log(`  Message acknowledged.`);
+});
 
 app.post(
   "/api/upload",
@@ -82,43 +141,9 @@ app.get("/api/count", async (req: Request, res: Response) => {
   }
 });
 
-let clients: any = [];
-
-app.get("/events", (req, res) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-
-  clients.push(res);
-
-  req.on("close", () => {
-    clients = clients.filter((client: any) => client !== res);
-  });
-
-  req.on("error", (err) => {
-    console.error("Connection error:", err);
-  });
-});
-
-app.post("/pubsub-handler", (req, res) => {
-  const message = req.body?.message;
-
-  if (message?.data) {
-    const data = Buffer.from(message.data, "base64").toString("utf-8");
-    console.log(`Received message: ${data}`);
-
-    clients.forEach((client: any) => client.write(`data: ${data}\n\n`));
-  } else {
-    console.error("Invalid message format");
-  }
-
-  res.status(200).send();
-});
-
 app.use(errorHandler as any);
 
-app.listen(PORT, () => {
+// Jalankan server
+server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
-export default app;
