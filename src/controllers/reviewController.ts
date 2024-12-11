@@ -8,6 +8,7 @@ import Controller from "../utils/controllerDecorator";
 import ReviewService from "../services/reviewService";
 import { PubSubTopic } from "../types/enum/dbEnum";
 import { publishMessage } from "../config/pubSubClient";
+import setCache from "../utils/setCache";
 
 @Controller
 class ReviewController {
@@ -81,7 +82,7 @@ class ReviewController {
    */
   async getAllReviews(req: Request, res: Response, next: NextFunction) {
     const reviews = await this.reviewService.getAllReviews();
-    createResponse(res, 200, "Reviews retrieved successfully", reviews);
+    setCache(req, createResponse(res, 200, "Reviews retrieved successfully", reviews));
   }
 
   /**

@@ -3,15 +3,17 @@ import MarketController from "../controllers/marketController";
 import authorizeAdmin from "../middlewares/authorizeAdmin";
 import authenticate from "../middlewares/authenticate";
 import multer from "../middlewares/multer";
+import cacheMiddleware from "../middlewares/cacheMiddleware";
 
 const marketRouter = express.Router();
 
-marketRouter.get("/", authenticate, MarketController.getAllMarkets);
-marketRouter.get("/:id", authenticate, MarketController.getMarketById);
+marketRouter.get("/", authenticate, cacheMiddleware, MarketController.getAllMarkets);
+marketRouter.get("/:id", authenticate, cacheMiddleware, MarketController.getMarketById);
 marketRouter.get("/slug/:slug", authenticate, MarketController.getMarketBySlug);
 marketRouter.get(
   "/:id/merchants",
   authenticate,
+  cacheMiddleware,
   MarketController.getMerchantsInMarket
 );
 marketRouter.post(

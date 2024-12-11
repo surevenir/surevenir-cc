@@ -3,16 +3,27 @@ import MerchantController from "../controllers/merchantController";
 import authorizeAdmin from "../middlewares/authorizeAdmin";
 import authenticate from "../middlewares/authenticate";
 import multer from "../middlewares/multer";
+import cacheMiddleware from "../middlewares/cacheMiddleware";
 
 const merchantRouter = express.Router();
 
-merchantRouter.get("/", authenticate, MerchantController.getAllMerchants);
+merchantRouter.get(
+  "/",
+  authenticate,
+  cacheMiddleware,
+  MerchantController.getAllMerchants
+);
 merchantRouter.get(
   "/by/owner",
   authenticate,
   MerchantController.getAllMerchantsByOwner
 );
-merchantRouter.get("/:id", authenticate, MerchantController.getMerchantById);
+merchantRouter.get(
+  "/:id",
+  authenticate,
+  cacheMiddleware,
+  MerchantController.getMerchantById
+);
 merchantRouter.get(
   "/slug/:slug",
   authenticate,
@@ -21,6 +32,7 @@ merchantRouter.get(
 merchantRouter.get(
   "/:id/products",
   authenticate,
+  cacheMiddleware,
   MerchantController.getProductsInMerchant
 );
 merchantRouter.post(

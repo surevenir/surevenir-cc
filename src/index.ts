@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { createServer } from "http";
-import userRoutes from "./routes/userRoutes";
 import WebSocket, { WebSocketServer } from "ws";
+import userRoutes from "./routes/userRoutes";
 import marketRoutes from "./routes/marketRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import merchantRoutes from "./routes/merchantRoutes";
@@ -15,6 +15,7 @@ import "./types/global/authUser";
 import multer from "./middlewares/multer";
 import MediaService from "./services/mediaService";
 import prisma from "./config/database";
+import { connectRedis, redisClient } from "./config/redis";
 import "./utils/validateEnv";
 import { pubSubClient } from "./utils/pubSubClient";
 
@@ -28,12 +29,20 @@ const wss = new WebSocketServer({ server });
 
 let recentMessages: { id: string; data: string; attributes: object }[] = [];
 const subscriptionName = process.env.SUBSCRIPTION_NAME as string;
-const subscription = pubSubClient.subscription(subscriptionName);
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello, TypeScript with Express!");
-});
+// Konfigurasi Redis jika diaktifkan
+if (process.env.WITH_CACHING === "true") {
+  connectRedis();
+  redisClient.on("connect", () => {
+    console.log("Connected to Redis!");
+  });
 
+  redisClient.on("error", (err) => {
+    console.error("Redis Client Error:", err);
+  });
+}
+
+// Middleware
 app.use(express.json());
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", FRONTEND_URL);
@@ -45,6 +54,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Route API
 app.use("/api/users", userRoutes);
 app.use("/api/markets", marketRoutes);
 app.use("/api/categories", categoryRoutes);
@@ -56,26 +66,27 @@ app.use("/api/images", mediaRoutes);
 app.use("/api/predict", predictRoutes);
 
 // WebSocket Connection Management
-wss.on("connection", (ws: any) => {
+wss.on("connection", (ws: WebSocket) => {
   console.log("New WebSocket connection established");
 
   ws.on("close", () => {
     console.log("WebSocket connection closed");
   });
 
-  ws.on("error", (error: any) => {
+  ws.on("error", (error) => {
     console.error("WebSocket error:", error);
   });
 });
 
 // Pub/Sub Subscription
-subscription.on("message", (message: any) => {
+const subscription = pubSubClient.subscription(subscriptionName);
+subscription.on("message", async (message: any) => {
   console.log(`\nReceived message:`);
   console.log(`  ID: ${message.id}`);
   console.log(`  Data: ${message.data.toString()}`);
   console.log(`  Attributes: ${JSON.stringify(message.attributes)}`);
 
-  // Simpan pesan terbaru
+  // Simpan pesan ke recentMessages
   recentMessages.push({
     id: message.id,
     data: message.data.toString(),
@@ -83,11 +94,27 @@ subscription.on("message", (message: any) => {
   });
 
   if (recentMessages.length > 100) {
-    recentMessages.shift(); // Batasi jumlah pesan yang disimpan
+    recentMessages.shift(); // Batasi jumlah pesan
+  }
+
+  // Simpan pesan ke Redis jika caching diaktifkan
+  if (process.env.WITH_CACHING === "true") {
+    try {
+      await redisClient.set(
+        `message:${message.id}`,
+        JSON.stringify({
+          data: message.data.toString(),
+          attributes: message.attributes,
+        })
+      );
+      console.log(`Message ${message.id} cached in Redis`);
+    } catch (err) {
+      console.error("Error caching message in Redis:", err);
+    }
   }
 
   // Kirim pesan ke semua klien WebSocket
-  wss.clients.forEach((client: any) => {
+  wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(
         JSON.stringify({
@@ -104,6 +131,12 @@ subscription.on("message", (message: any) => {
   console.log(`  Message acknowledged.`);
 });
 
+// Endpoint untuk recent messages
+app.get("/api/messages", (req: Request, res: Response) => {
+  res.json(recentMessages);
+});
+
+// Endpoint untuk upload
 app.post(
   "/api/upload",
   multer.array("images", 10),
@@ -113,6 +146,7 @@ app.post(
   }
 );
 
+// Endpoint untuk statistik
 app.get("/api/count", async (req: Request, res: Response) => {
   try {
     const usersCount = await prisma.user.count();
@@ -141,6 +175,7 @@ app.get("/api/count", async (req: Request, res: Response) => {
   }
 });
 
+// Error Handler
 app.use(errorHandler as any);
 
 // Jalankan server
