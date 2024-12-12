@@ -5,5 +5,5 @@ dotenv.config();
 
 export const pubSubClient = new PubSub({
   projectId: process.env.GOOGLE_PROJECT_ID,
-  keyFilename: process.env.SERVICE_ACCOUNT_PATH,
+  keyFilename: process.env.PUB_SUB_SERVICE_ACCOUNT_PATH,
 });
