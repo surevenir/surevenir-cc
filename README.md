@@ -1,5 +1,9 @@
 # Surevenir Backend Service
 
+<div align="center">
+<img src="./assets/architecture.png" width="100%" >
+</div>
+
 Surevenir Backend Service is the backend infrastructure for the Surevenir application, built using **TypeScript**, **Express**, and **Prisma ORM**. This project provides APIs to handle the business logic and database operations, ensuring a robust backend for the Surevenir app.
 
 ## Features
@@ -15,16 +19,18 @@ Surevenir Backend Service is the backend infrastructure for the Surevenir applic
 The project is structured into distinct folders for better organization:
 
 ```
-src/
-├── config/      # Configuration files for environment setup and database
-├── controllers/ # Handles request logic and sends appropriate responses
-├── credentials/ # Manages sensitive data like tokens and API keys
-├── middlewares/ # Custom middleware (e.g., authentication, logging)
-├── routes/      # Defines all API routes
-├── services/    # Handles business logic and interacts with controllers
-├── types/       # Custom TypeScript type definitions
-├── utils/       # Reusable utility functions
-└── index.ts     # Main entry point for the backend application
+surevenir-cc/
+|──prisma/
+|──src/
+|  ├── config/      # Configuration files for environment setup and database
+|  ├── controllers/ # Handles request logic and sends appropriate responses
+|  ├── middlewares/ # Custom middleware (e.g., authentication, logging)
+|  ├── routes/      # Defines all API routes
+|  ├── services/    # Handles business logic and interacts with controllers
+|  ├── types/       # Custom TypeScript type definitions
+|  ├── utils/       # Reusable utility functions
+|  └── index.ts     # Main entry point for the backend application
+└── Dockerfile      # Docker configuration
 ```
 
 ## Prerequisites
@@ -37,13 +43,15 @@ Ensure the following tools are installed:
 
 ## Installation
 
+### Development
+
 Follow these steps to set up the project locally:
 
 1. Clone this repository:
 
    ```bash
-   git clone <repository-url>
-   cd surevenir-backend
+   git clone https://github.com/surevenir/surevenir-cc.git
+   cd surevenir-cc
    ```
 
 2. Install dependencies:
@@ -76,19 +84,43 @@ Follow these steps to set up the project locally:
    npx prisma migrate dev
    ```
 
-## Usage
-
-To start the backend server in development mode:
+5. To start the backend server in development mode:
 
 ```bash
 npm run dev
 ```
 
-The server will run by default at `http://localhost:5000`.
+The server will run by default at `http://localhost:8080`.
+
+### Production
+
+1. Build the project:
+
+Compile TypeScript files into JavaScript for production use:
+
+```bash
+npm run build
+```
+
+2. Set up the production environment variables:
+
+Ensure that the .env file is properly configured for production settings.
+
+3. Build image:
+
+```bash
+docker build -t <tag> .
+```
+
+3. Push image:
+
+```bash
+docker push <tag>
+```
 
 ## API Documentation
 
-https://documenter.getpostman.com/view/27683987/2sAYBVisLw
+[Documentation](https://documenter.getpostman.com/view/27683987/2sAYBVisLw)
 
 ## Acknowledgements
 
